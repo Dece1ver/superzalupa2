@@ -101,6 +101,17 @@ class MyInterface(QtWidgets.QMainWindow):
         self.ui.label_mazatrol_list.setText(f'Файлов Mazatrol: {count_mazatrol}')
         self.ui.progressBar.setRange(0, 100)
 
+        def rename_mazatrol(self, mazatrol_files):
+	    self.ui.progressBar.setRange(0, len(mazatrol_files)
+        self.ui.progressBar.setValue(0)
+	    for path_to_file in mazatrol_files:
+		    file_dir, file_name = os.path.split(path_to_file)
+			new_file_name = get_mazatrol_name(path_to_file)
+			new_file_path = os.path.join(file_dir, new_file_name)
+            os.rename(path_to_file, new_file_path)
+			self.ui.info_window.setPlainText(f'{file_name} переименован в {new_file_name}')
+
+
 
 if __name__ == '__main__':
     app = QtWidgets.QApplication([])
