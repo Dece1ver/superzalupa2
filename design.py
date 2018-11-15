@@ -65,7 +65,7 @@ class Ui_MainWindow(object):
         self.backup_checkbox.setAcceptDrops(False)
         self.backup_checkbox.setLayoutDirection(QtCore.Qt.LeftToRight)
         self.backup_checkbox.setAutoFillBackground(False)
-        self.backup_checkbox.setChecked(True)
+        self.backup_checkbox.setChecked(False)
         self.backup_checkbox.setTristate(False)
         self.backup_checkbox.setObjectName("backup_checkbox")
         self.line_3 = QtWidgets.QFrame(self.centralwidget)
