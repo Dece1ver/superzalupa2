@@ -115,8 +115,10 @@ class MyInterface(QtWidgets.QMainWindow):
                     self.mazatrol_files.append(full_path_to_file)
                     programm_name = self.get_mazatrol_name(full_path_to_file)
                     file_label = f'{file: <8}:({programm_name})'
-
-                    item = self.ui.mazatrol_list_widget.addItem(file_label)
+                    item = QtWidgets.QListWidgetItem()
+                    self.ui.mazatrol_list_widget.addItem(item)
+                    item.setText(file_label)
+                    self.ui.mazatrol_list_widget.setCurrentItem(item)
 
                 else:
                     if not full_path_to_file.upper().endswith(badfiles):
@@ -125,8 +127,10 @@ class MyInterface(QtWidgets.QMainWindow):
                             self.fanuc_files.append(full_path_to_file)
                             programm_name = self.get_fanuc_name(full_path_to_file)
                             file_label = f'{file: <8}:({programm_name})'
-
-                            item = self.ui.fanuc_list_widget.addItem(file_label)
+                            item = QtWidgets.QListWidgetItem()
+                            self.ui.fanuc_list_widget.addItem(item)
+                            item.setText(file_label)
+                            self.ui.fanuc_list_widget.setCurrentItem(item)
 
         count_fanuc = len(self.fanuc_files)
         count_mazatrol = len(self.mazatrol_files)
@@ -148,9 +152,9 @@ class MyInterface(QtWidgets.QMainWindow):
         if self.ui.backup_checkbox.checkState():
             self.backup(self.mazatrol_files)
             self.ui.info_window.insertPlainText(f'Делаем бэкап в папку суперзалупы...')
-
         self.ui.info_window.clear()
 
+        count = 0
         for path_to_file in self.mazatrol_files:
             file_dir, file_name = os.path.split(path_to_file)
             new_file_name = self.get_mazatrol_name(path_to_file) + '.PBG'
@@ -167,13 +171,22 @@ class MyInterface(QtWidgets.QMainWindow):
             os.rename(path_to_file, new_file_path)
             self.ui.info_window.insertPlainText(f'{file_name} переименован в {new_file_name}\n')
             progress_bar_steps += 1
+        self.ui.info_window.insertPlainText(f'Переименовано {count} из {len(self.mazatrol_files)} файлов.\n')
         self.ui.rename_mazatrol_button.setEnabled(False)
+        self.ui.statusbar.showMessage('Переименовывание завершено.')
 
     def rename_fanuc(self, fanuc_files):
         self.ui.info_window.clear()
         self.ui.progressBar.setRange(0, len(self.fanuc_files))
         self.ui.progressBar.setValue(0)
         progress_bar_steps = 0
+
+        if self.ui.backup_checkbox.checkState():
+            self.backup(self.fanuc_files)
+            self.ui.info_window.insertPlainText(f'Делаем бэкап в папку суперзалупы...')
+        self.ui.info_window.clear()
+
+        count = 0
         for path_to_file in self.fanuc_files:
             file_dir, file_name = os.path.split(path_to_file)
             new_file_name = self.get_fanuc_name(path_to_file)
@@ -188,12 +201,16 @@ class MyInterface(QtWidgets.QMainWindow):
                 new_file_path += f'(копия {current_time})'
             try:
                 os.rename(path_to_file, new_file_path)
+                self.ui.info_window.insertPlainText(f'{file_name} переименован в {new_file_name}\n')
+                progress_bar_steps += 1
+                count += 1
             except Exception as e:
                 print(e)
 
-            self.ui.info_window.insertPlainText(f'{file_name} переименован в {new_file_name}\n')
-            progress_bar_steps += 1
+        self.ui.info_window.insertPlainText(f'Переименовано {count} из {len(self.fanuc_files)} файлов.\n').setTextCursor()
         self.ui.rename_fanuc_button.setEnabled(False)
+        self.ui.statusbar.showMessage('Переименовывание завершено.')
+        
 
 
 if __name__ == '__main__':
