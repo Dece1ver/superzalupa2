@@ -1,4 +1,4 @@
-from PyQt5 import QtWidgets
+from PyQt5 import QtWidgets, QtCore
 from design import Ui_MainWindow  # импорт сгенерированного файла дизайна
 from datetime import datetime
 from constants import badfiles
@@ -6,7 +6,6 @@ import time
 import sys
 import os
 import shutil
-import threading
 
 
 class MyInterface(QtWidgets.QMainWindow):
@@ -25,14 +24,11 @@ class MyInterface(QtWidgets.QMainWindow):
         self.ui.scaner_path_dialog_button.clicked.connect(self.get_path)
         self.ui.statusbar.showMessage('Кнопки переименовывателей станут активны после сканирования.')
 
-        self.ui.mazatrol_files = []
-        self.ui.fanuc_files = []
-        self.ui.error_files = []
-
+    # получает путь с кнопки
     def get_path(self):
-        self.ui.cwd = QtWidgets.QFileDialog.getExistingDirectory()
-        if self.ui.cwd == '':
-            self.ui.cwd = os.getcwd()
+        new_path = QtWidgets.QFileDialog.getExistingDirectory()
+        if new_path != '':
+            self.ui.cwd = new_path
         self.ui.scaner_path.setText(self.ui.cwd)
         self.ui.rename_mazatrol_button.setEnabled(False)
         self.ui.rename_fanuc_button.setEnabled(False)
@@ -103,12 +99,24 @@ class MyInterface(QtWidgets.QMainWindow):
         self.mazatrol_files = []
         self.fanuc_files = []
         self.error_files = []
+
         self.ui.mazatrol_list_widget.clear()
         self.ui.fanuc_list_widget.clear()
+        self.ui.info_window.clear()
+        self.ui.info_window.insertPlainText(f'Сканирование директории "{self.ui.cwd}"...\n')
         self.ui.progressBar.setRange(0, 0)
         self.ui.progressBar.setValue(-1)
 
+        self.cancelled = False
+        self.progress = QtWidgets.QProgressDialog("Searching...", "Stop", 0, 0, self.ui.frame)
+        self.progress.setWindowModality(QtCore.Qt.WindowModal)
+        self.progress.setMinimumDuration(5000)
+
         for dir_paths, dir_names, file_names in os.walk(self.ui.cwd):
+            if self.progress.wasCanceled():
+                self.cancelled = True
+                self.ui.info_window.insertPlainText('Сканирование отменено.')
+                return
             for file in file_names:
                 full_path_to_file = os.path.join(dir_paths, file)
                 if full_path_to_file.upper().endswith('.PBG'):
@@ -134,14 +142,30 @@ class MyInterface(QtWidgets.QMainWindow):
 
         count_fanuc = len(self.fanuc_files)
         count_mazatrol = len(self.mazatrol_files)
-        self.ui.info_window.setPlainText(f'Найдено:\nФайлов Fanuc: {count_fanuc}\nФайлов Mazatrol: {count_mazatrol}')
-        self.ui.label_fanuc_list.setText(f'Файлов Fanuc: {count_fanuc}')
-        self.ui.label_mazatrol_list.setText(f'Файлов Mazatrol: {count_mazatrol}')
-        self.ui.rename_mazatrol_button.setEnabled(True)
-        self.ui.rename_fanuc_button.setEnabled(True)
+
+        if count_mazatrol != 0:
+            self.ui.rename_mazatrol_button.setEnabled(True)
+            self.ui.statusbar.showMessage('Можно переименовывать.')
+            self.ui.label_mazatrol_list.setText(f'Файлов Mazatrol: {count_mazatrol}')
+            self.ui.info_window.insertPlainText(f'Файлов Mazatrol: {count_mazatrol}\n')
+        else:
+            self.ui.label_mazatrol_list.setText(f'Файлов Mazatrol не найдено.')
+            self.ui.info_window.insertPlainText(f'Файлов Mazatrol не найдено.\n')
+        if count_fanuc != 0:
+            self.ui.rename_fanuc_button.setEnabled(True)
+            self.ui.statusbar.showMessage('Можно переименовывать.')
+            self.ui.label_fanuc_list.setText(f'Файлов Fanuc: {count_fanuc}')
+            self.ui.info_window.insertPlainText(f'Файлов Fanuc: {count_fanuc}\n')
+        else:
+            self.ui.label_fanuc_list.setText(f'Файлов Fanuc не найдено.')
+            self.ui.info_window.insertPlainText(f'Файлов Fanuc не найдено.\n')
+
+        if count_mazatrol == 0 and count_fanuc == 0:
+            self.ui.statusbar.showMessage('Нечего переименовывать.')
+
         self.ui.progressBar.setRange(0, 100)
         self.ui.progressBar.setValue(0)
-        self.ui.statusbar.showMessage('Можно переименовывать.')
+        self.progress.deleteLater()
 
     def rename_mazatrol(self, mazatrol_files):
         self.ui.info_window.clear()
@@ -151,7 +175,7 @@ class MyInterface(QtWidgets.QMainWindow):
 
         if self.ui.backup_checkbox.checkState():
             self.backup(self.mazatrol_files)
-            self.ui.info_window.insertPlainText(f'Делаем бэкап в папку суперзалупы...')
+            self.ui.info_window.insertPlainText('Делаем бэкап в папку суперзалупы...')
         self.ui.info_window.clear()
 
         count = 0
@@ -170,6 +194,7 @@ class MyInterface(QtWidgets.QMainWindow):
                 new_file_path += f'(копия {current_time}).PBG'
             os.rename(path_to_file, new_file_path)
             self.ui.info_window.insertPlainText(f'{file_name} переименован в {new_file_name}\n')
+            count += 1
             progress_bar_steps += 1
         self.ui.info_window.insertPlainText(f'Переименовано {count} из {len(self.mazatrol_files)} файлов.\n')
         self.ui.rename_mazatrol_button.setEnabled(False)
@@ -207,10 +232,9 @@ class MyInterface(QtWidgets.QMainWindow):
             except Exception as e:
                 print(e)
 
-        self.ui.info_window.insertPlainText(f'Переименовано {count} из {len(self.fanuc_files)} файлов.\n').setTextCursor()
+        self.ui.info_window.insertPlainText(f'Переименовано {count} из {len(self.fanuc_files)} файлов.\n')
         self.ui.rename_fanuc_button.setEnabled(False)
         self.ui.statusbar.showMessage('Переименовывание завершено.')
-        
 
 
 if __name__ == '__main__':
@@ -218,4 +242,4 @@ if __name__ == '__main__':
     application = MyInterface()
     application.show()
 
-    sys.exit(app.exec())
+sys.exit(app.exec())
