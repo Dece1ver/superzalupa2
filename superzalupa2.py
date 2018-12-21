@@ -1,19 +1,22 @@
 from PyQt5 import QtWidgets, QtCore
+from PyQt5.QtCore import QThread, pyqtSignal
 from design import Ui_MainWindow  # импорт сгенерированного файла дизайна
 from datetime import datetime
 from constants import badfiles
 import time
 import sys
 import os
-import shutil
 
 
-class MyInterface(QtWidgets.QMainWindow):
+class MyInterface(QtWidgets.QMainWindow, QtCore.QObject):
+
+    scaner_signal = pyqtSignal()
+
     def __init__(self):
         super(MyInterface, self).__init__()
+        QtCore.QObject.__init__(self)
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
-
         self.ui.cwd = os.getcwd()
         self.ui.scaner_path.setText(self.ui.cwd)
         self.ui.scaner_button.clicked.connect(self.scaner)
@@ -32,20 +35,6 @@ class MyInterface(QtWidgets.QMainWindow):
         self.ui.scaner_path.setText(self.ui.cwd)
         self.ui.rename_mazatrol_button.setEnabled(False)
         self.ui.rename_fanuc_button.setEnabled(False)
-
-    def backup(self, list):
-        default_dir = os.getcwd()
-        if 'backups' not in os.listdir(os.getcwd()):
-            os.mkdir('backups')
-        subfolder = datetime.now().strftime("%d-%m-%y %H-%M")
-        os.chdir('backups')
-        if not os.path.isdir(subfolder):
-            os.mkdir(subfolder)
-        os.chdir(subfolder)
-
-        for file in list:
-            shutil.copy2(file, os.getcwd())
-        os.chdir(default_dir)
 
     # получает название детали из мазаковской программы
     def get_mazatrol_name(self, full_path_to_file):
@@ -94,8 +83,6 @@ class MyInterface(QtWidgets.QMainWindow):
             self.error_files.append(self.full_path_to_file)
 
     def scaner(self):
-
-        # Очищает списки
         self.mazatrol_files = []
         self.fanuc_files = []
         self.error_files = []
@@ -112,71 +99,15 @@ class MyInterface(QtWidgets.QMainWindow):
         self.progress.setWindowModality(QtCore.Qt.WindowModal)
         self.progress.setMinimumDuration(5000)
 
-        for dir_paths, dir_names, file_names in os.walk(self.ui.cwd):
-            if self.progress.wasCanceled():
-                self.cancelled = True
-                self.ui.info_window.insertPlainText('Сканирование отменено.')
-                return
-            for file in file_names:
-                full_path_to_file = os.path.join(dir_paths, file)
-                if full_path_to_file.upper().endswith('.PBG'):
-                    self.mazatrol_files.append(full_path_to_file)
-                    programm_name = self.get_mazatrol_name(full_path_to_file)
-                    file_label = f'{file: <8}:({programm_name})'
-                    item = QtWidgets.QListWidgetItem()
-                    self.ui.mazatrol_list_widget.addItem(item)
-                    item.setText(file_label)
-                    self.ui.mazatrol_list_widget.setCurrentItem(item)
-
-                else:
-                    if not full_path_to_file.upper().endswith(badfiles):
-                        check = self.check_fanuc_programm(full_path_to_file)
-                        if check:
-                            self.fanuc_files.append(full_path_to_file)
-                            programm_name = self.get_fanuc_name(full_path_to_file)
-                            file_label = f'{file: <8}:({programm_name})'
-                            item = QtWidgets.QListWidgetItem()
-                            self.ui.fanuc_list_widget.addItem(item)
-                            item.setText(file_label)
-                            self.ui.fanuc_list_widget.setCurrentItem(item)
-
-        count_fanuc = len(self.fanuc_files)
-        count_mazatrol = len(self.mazatrol_files)
-
-        if count_mazatrol != 0:
-            self.ui.rename_mazatrol_button.setEnabled(True)
-            self.ui.statusbar.showMessage('Можно переименовывать.')
-            self.ui.label_mazatrol_list.setText(f'Файлов Mazatrol: {count_mazatrol}')
-            self.ui.info_window.insertPlainText(f'Файлов Mazatrol: {count_mazatrol}\n')
-        else:
-            self.ui.label_mazatrol_list.setText(f'Файлов Mazatrol не найдено.')
-            self.ui.info_window.insertPlainText(f'Файлов Mazatrol не найдено.\n')
-        if count_fanuc != 0:
-            self.ui.rename_fanuc_button.setEnabled(True)
-            self.ui.statusbar.showMessage('Можно переименовывать.')
-            self.ui.label_fanuc_list.setText(f'Файлов Fanuc: {count_fanuc}')
-            self.ui.info_window.insertPlainText(f'Файлов Fanuc: {count_fanuc}\n')
-        else:
-            self.ui.label_fanuc_list.setText(f'Файлов Fanuc не найдено.')
-            self.ui.info_window.insertPlainText(f'Файлов Fanuc не найдено.\n')
-
-        if count_mazatrol == 0 and count_fanuc == 0:
-            self.ui.statusbar.showMessage('Нечего переименовывать.')
-
-        self.ui.progressBar.setRange(0, 100)
-        self.ui.progressBar.setValue(0)
-        self.progress.deleteLater()
+        self.scaner_thread = ScanerThread()
+        self.scaner_signal.connect(self.scaner_thread.add_file)
+        self.scaner_thread.start()
 
     def rename_mazatrol(self, mazatrol_files):
         self.ui.info_window.clear()
         self.ui.progressBar.setRange(0, len(self.mazatrol_files))
         self.ui.progressBar.setValue(0)
         progress_bar_steps = 0
-
-        if self.ui.backup_checkbox.checkState():
-            self.backup(self.mazatrol_files)
-            self.ui.info_window.insertPlainText('Делаем бэкап в папку суперзалупы...')
-        self.ui.info_window.clear()
 
         count = 0
         for path_to_file in self.mazatrol_files:
@@ -206,11 +137,6 @@ class MyInterface(QtWidgets.QMainWindow):
         self.ui.progressBar.setValue(0)
         progress_bar_steps = 0
 
-        if self.ui.backup_checkbox.checkState():
-            self.backup(self.fanuc_files)
-            self.ui.info_window.insertPlainText(f'Делаем бэкап в папку суперзалупы...')
-        self.ui.info_window.clear()
-
         count = 0
         for path_to_file in self.fanuc_files:
             file_dir, file_name = os.path.split(path_to_file)
@@ -235,6 +161,75 @@ class MyInterface(QtWidgets.QMainWindow):
         self.ui.info_window.insertPlainText(f'Переименовано {count} из {len(self.fanuc_files)} файлов.\n')
         self.ui.rename_fanuc_button.setEnabled(False)
         self.ui.statusbar.showMessage('Переименовывание завершено.')
+
+
+class ScanerThread(QThread, MyInterface):
+
+    def __init__(self):
+        QThread.__init__(self)
+
+    def __del__(self):
+        self.wait()
+
+    def add_file(self, dir_paths, dir_names, file_names):
+        if application.progress.wasCanceled():
+            application.cancelled = True
+            application.ui.info_window.insertPlainText('Сканирование отменено.')
+            return
+        for file in file_names:
+            full_path_to_file = os.path.join(dir_paths, file)
+            if full_path_to_file.upper().endswith('.PBG'):
+                application.mazatrol_files.append(full_path_to_file)
+                programm_name = application.get_mazatrol_name(full_path_to_file)
+                file_label = f'{file: <8}:({programm_name})'
+                item = QtWidgets.QListWidgetItem()
+                application.ui.mazatrol_list_widget.addItem(item)
+                item.setText(file_label)
+                application.ui.mazatrol_list_widget.setCurrentItem(item)
+
+            else:
+                if not full_path_to_file.upper().endswith(badfiles):
+                    check = application.check_fanuc_programm(full_path_to_file)
+                    if check:
+                        application.fanuc_files.append(full_path_to_file)
+                        programm_name = application.get_fanuc_name(full_path_to_file)
+                        file_label = f'{file: <8}:({programm_name})'
+                        item = QtWidgets.QListWidgetItem()
+                        application.ui.fanuc_list_widget.addItem(item)
+                        item.setText(file_label)
+                        application.ui.fanuc_list_widget.setCurrentItem(item)
+
+    def run(self):
+
+        for dir_paths, dir_names, file_names in os.walk(application.ui.cwd):
+            self.add_file(dir_paths, dir_names, file_names)
+
+        count_fanuc = len(application.fanuc_files)
+        count_mazatrol = len(application.mazatrol_files)
+
+        if count_mazatrol != 0:
+            application.ui.rename_mazatrol_button.setEnabled(True)
+            application.ui.statusbar.showMessage('Можно переименовывать.')
+            application.ui.label_mazatrol_list.setText(f'Файлов Mazatrol: {count_mazatrol}')
+            application.ui.info_window.insertPlainText(f'Файлов Mazatrol: {count_mazatrol}\n')
+        else:
+            application.ui.label_mazatrol_list.setText(f'Файлов Mazatrol не найдено.')
+            application.ui.info_window.insertPlainText(f'Файлов Mazatrol не найдено.\n')
+        if count_fanuc != 0:
+            application.ui.rename_fanuc_button.setEnabled(True)
+            application.ui.statusbar.showMessage('Можно переименовывать.')
+            application.ui.label_fanuc_list.setText(f'Файлов Fanuc: {count_fanuc}')
+            application.ui.info_window.insertPlainText(f'Файлов Fanuc: {count_fanuc}\n')
+        else:
+            application.ui.label_fanuc_list.setText(f'Файлов Fanuc не найдено.')
+            application.ui.info_window.insertPlainText(f'Файлов Fanuc не найдено.\n')
+
+        if count_mazatrol == 0 and count_fanuc == 0:
+            application.ui.statusbar.showMessage('Нечего переименовывать.')
+
+        application.ui.progressBar.setRange(0, 100)
+        application.ui.progressBar.setValue(0)
+        application.progress.deleteLater()
 
 
 if __name__ == '__main__':
