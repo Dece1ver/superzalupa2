@@ -21,7 +21,7 @@ class Ui_MainWindow(object):
         MainWindow.setMinimumSize(QtCore.QSize(800, 600))
         MainWindow.setContextMenuPolicy(QtCore.Qt.DefaultContextMenu)
         icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap("../../Icons/Pauloruberto-Custom-Round-Yosemite-Python.ico"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon.addPixmap(QtGui.QPixmap("../../../Катян/res/Untitled-3.ico"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         MainWindow.setWindowIcon(icon)
         MainWindow.setDocumentMode(False)
         MainWindow.setDockNestingEnabled(False)
@@ -385,3 +385,4 @@ class Ui_MainWindow(object):
         self.action.setText(_translate("MainWindow", "Настройки"))
         self.action_3.setText(_translate("MainWindow", "Справка"))
         self.action_5.setText(_translate("MainWindow", "Выход"))
+
