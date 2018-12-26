@@ -10,9 +10,6 @@ import sys
 import os
 
 
-check_box = None
-
-
 class MyInterface(QtWidgets.QMainWindow):
 
     def __init__(self):
