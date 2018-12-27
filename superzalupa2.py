@@ -168,19 +168,20 @@ class MyInterface(QtWidgets.QMainWindow):
         else:
             self.scaner_thread.scaner_signal.connect(self.add_file, QtCore.Qt.QueuedConnection)
             self.scaner_thread.finished.connect(self.finish_scan)
+
         self.scaner_thread.start()
 
     def on_start(self):
+        pass
         self.ui.scaner_button.setText('Остановить')
         self.ui.scaner_button.clicked.connect(self.stop_scaner)
-        self.ui.scaner_button.setDisabled(True)
+        # self.ui.scaner_button.setDisabled(True)
 
     def stop_scaner(self):
         self.ui.scaner_button.setText('Сканировать')
         self.ui.scaner_button.clicked.connect(self.scaner)
         self.ui.statusbar.showMessage('Сканирование остановлено. Рекомендуется отсканировать снова.')
         self.scaner_thread.running = False
-        self.scaner_thread.wait(1000)
 
     def add_file(self, full_path_to_file, file_label):
         if full_path_to_file.upper().endswith('.PBG'):
@@ -312,14 +313,20 @@ class ScanerThread(QThread, MyInterface):
     def __init__(self):
         QThread.__init__(self)
         self.running = False
+        self.status = True
 
     def __del__(self):
         self.wait()
 
     def run(self):
-
+        self.running = True
         for dir_paths, dir_names, file_names in os.walk(application.ui.cwd):
+            if not self.status:
+                break
             for file in file_names:
+                if not self.running:
+                    self.status = False
+                    break
                 full_path_to_file = os.path.join(dir_paths, file)
                 if full_path_to_file.upper().endswith('.PBG'):
                     application.mazatrol_files.append(full_path_to_file)
