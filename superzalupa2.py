@@ -173,6 +173,7 @@ class MyInterface(QtWidgets.QMainWindow):
     def on_start(self):
         self.ui.scaner_button.setText('Остановить')
         self.ui.scaner_button.clicked.connect(self.stop_scaner)
+        self.ui.scaner_button.setDisabled(True)
 
     def stop_scaner(self):
         self.ui.scaner_button.setText('Сканировать')
@@ -317,24 +318,22 @@ class ScanerThread(QThread, MyInterface):
 
     def run(self):
 
-        self.running = True
-        while self.running is True:
-            for dir_paths, dir_names, file_names in os.walk(application.ui.cwd):
-                for file in file_names:
-                    full_path_to_file = os.path.join(dir_paths, file)
-                    if full_path_to_file.upper().endswith('.PBG'):
-                        application.mazatrol_files.append(full_path_to_file)
-                        programm_name = application.get_mazatrol_name(full_path_to_file)
-                        file_label = f'{file: <8}:({programm_name})'
-                        self.scaner_signal.emit(full_path_to_file, file_label)
-                    else:
-                        if not full_path_to_file.upper().endswith(badfiles):
-                            check = self.check_fanuc_programm(full_path_to_file)
-                            if check:
-                                application.fanuc_files.append(full_path_to_file)
-                                programm_name = application.get_fanuc_name(full_path_to_file)
-                                file_label = f'{file: <8}:({programm_name})'
-                                self.scaner_signal.emit(full_path_to_file, file_label)
+        for dir_paths, dir_names, file_names in os.walk(application.ui.cwd):
+            for file in file_names:
+                full_path_to_file = os.path.join(dir_paths, file)
+                if full_path_to_file.upper().endswith('.PBG'):
+                    application.mazatrol_files.append(full_path_to_file)
+                    programm_name = application.get_mazatrol_name(full_path_to_file)
+                    file_label = f'{file: <8}:({programm_name})'
+                    self.scaner_signal.emit(full_path_to_file, file_label)
+                else:
+                    if not full_path_to_file.upper().endswith(badfiles):
+                        check = self.check_fanuc_programm(full_path_to_file)
+                        if check:
+                            application.fanuc_files.append(full_path_to_file)
+                            programm_name = application.get_fanuc_name(full_path_to_file)
+                            file_label = f'{file: <8}:({programm_name})'
+                            self.scaner_signal.emit(full_path_to_file, file_label)
 
 
 class MazatrolRenamer(QThread, MyInterface):
