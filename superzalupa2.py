@@ -18,7 +18,7 @@ class MyInterface(QtWidgets.QMainWindow):
         self.ui.setupUi(self)
         self.ui.cwd = os.getcwd()
         self.ui.scaner_path.setText(self.ui.cwd)
-        self.ui.scaner_button.clicked.connect(self.scaner)
+        self.ui.scaner_button.clicked.connect(self.scaner_button_handler)
         self.ui.rename_mazatrol_button.clicked.connect(self.rename_mazatrol)
         self.ui.rename_fanuc_button.clicked.connect(self.rename_fanuc)
         self.ui.rename_mazatrol_button.setEnabled(False)
@@ -28,9 +28,10 @@ class MyInterface(QtWidgets.QMainWindow):
         self.ui.action_5.triggered.connect(self.close)
         self.ui.statusbar.showMessage('Кнопки переименовывателей станут активны после сканирования.')
         self.fast_scan_check = False
+        self.scaner_thread = ScanerThread()
 
     def save_check_box_settings(self):
-        print(self.check_box.isChecked())
+        # print(self.check_box.isChecked())
         self.fast_scan_check = self.check_box.isChecked()
 
     def show_settings(self):
@@ -153,6 +154,9 @@ class MyInterface(QtWidgets.QMainWindow):
         self.mazatrol_files = []
         self.fanuc_files = []
         self.error_files = []
+        if self.fast_scan_check:
+            self.mazatrol_labels = []
+            self.fanuc_labels = []
 
         self.ui.mazatrol_list_widget.clear()
         self.ui.fanuc_list_widget.clear()
@@ -160,73 +164,51 @@ class MyInterface(QtWidgets.QMainWindow):
         self.ui.info_window.insertPlainText(f'Сканирование директории "{self.ui.cwd}"...\n')
         self.ui.progressBar.setRange(0, 0)
         self.ui.progressBar.setValue(-1)
-
-        self.scaner_thread = ScanerThread()
         self.scaner_thread.started.connect(self.on_start)
-        if self.fast_scan_check:
-            self.scaner_thread.finished.connect(self.fast_scan)
-        else:
-            self.scaner_thread.scaner_signal.connect(self.add_file, QtCore.Qt.QueuedConnection)
-            self.scaner_thread.finished.connect(self.finish_scan)
-
+        self.scaner_thread.scaner_signal.connect(self.add_file)
+        self.scaner_thread.finished.connect(self.finish_scan)
         self.scaner_thread.start()
+
+    def scaner_button_handler(self):
+        # print(self.scaner_thread.status)
+        if self.scaner_thread.status:
+            self.stop_scaner()
+        else:
+            self.scaner()
 
     def on_start(self):
         pass
         self.ui.scaner_button.setText('Остановить')
-        self.ui.scaner_button.clicked.connect(self.stop_scaner)
         # self.ui.scaner_button.setDisabled(True)
 
     def stop_scaner(self):
-        self.ui.scaner_button.setText('Сканировать')
-        self.ui.scaner_button.clicked.connect(self.scaner)
-        self.ui.statusbar.showMessage('Сканирование остановлено. Рекомендуется отсканировать снова.')
         self.scaner_thread.running = False
 
     def add_file(self, full_path_to_file, file_label):
-        if full_path_to_file.upper().endswith('.PBG'):
-            item = QtWidgets.QListWidgetItem()
-            self.ui.mazatrol_list_widget.addItem(item)
-            item.setText(file_label)
-            self.ui.mazatrol_list_widget.setCurrentItem(item)
-            self.ui.label_mazatrol_list.setText(f'Файлов Mazatrol: {len(self.mazatrol_files)}')
+        if self.fast_scan_check:
+            if full_path_to_file.upper().endswith('.PBG'):
+                self.mazatrol_labels.append(file_label)
+            else:
+                self.fanuc_labels.append(file_label)
         else:
-            item = QtWidgets.QListWidgetItem()
-            self.ui.fanuc_list_widget.addItem(item)
-            item.setText(file_label)
-            self.ui.fanuc_list_widget.setCurrentItem(item)
-            self.ui.label_fanuc_list.setText(f'Файлов Fanuc: {len(self.fanuc_files)}')
-
-    def fast_scan(self):
-        if len(self.mazatrol_files) != 0:
-            self.ui.mazatrol_list_widget.addItems(self.mazatrol_files)
-            self.ui.rename_mazatrol_button.setEnabled(True)
-            self.ui.statusbar.showMessage('Можно переименовывать.')
-            self.ui.info_window.insertPlainText(f'Файлов Mazatrol: {len(self.mazatrol_files)}\n')
-            self.ui.label_mazatrol_list.setText(f'Файлов Mazatrol: {len(self.mazatrol_files)}')
-        else:
-            self.ui.label_mazatrol_list.setText(f'Файлов Mazatrol не найдено.')
-            self.ui.info_window.insertPlainText(f'Файлов Mazatrol не найдено.\n')
-        if len(self.fanuc_files) != 0:
-            self.ui.fanuc_list_widget.addItems(self.fanuc_files)
-            self.ui.rename_fanuc_button.setEnabled(True)
-            self.ui.statusbar.showMessage('Можно переименовывать.')
-            self.ui.info_window.insertPlainText(f'Файлов Fanuc: {len(self.fanuc_files)}\n')
-            self.ui.label_fanuc_list.setText(f'Файлов Fanuc: {len(self.fanuc_files)}')
-        else:
-            self.ui.label_fanuc_list.setText(f'Файлов Fanuc не найдено.')
-            self.ui.info_window.insertPlainText(f'Файлов Fanuc не найдено.\n')
-        if self.mazatrol_files == 0 and self.fanuc_files == 0:
-            self.ui.statusbar.showMessage('Нечего переименовывать.')
-
-        self.ui.progressBar.setRange(0, 100)
-        self.ui.progressBar.setValue(0)
-        self.ui.scaner_button.clicked.setText('Сканировать')
-        self.ui.scaner_button.clicked.connect(self.scaner)
+            if full_path_to_file.upper().endswith('.PBG'):
+                item = QtWidgets.QListWidgetItem()
+                self.ui.mazatrol_list_widget.addItem(item)
+                item.setText(file_label)
+                self.ui.mazatrol_list_widget.setCurrentItem(item)
+                self.ui.label_mazatrol_list.setText(f'Файлов Mazatrol: {len(self.mazatrol_files)}')
+            else:
+                item = QtWidgets.QListWidgetItem()
+                self.ui.fanuc_list_widget.addItem(item)
+                item.setText(file_label)
+                self.ui.fanuc_list_widget.setCurrentItem(item)
+                self.ui.label_fanuc_list.setText(f'Файлов Fanuc: {len(self.fanuc_files)}')
 
     def finish_scan(self):
 
         if len(self.mazatrol_files) != 0:
+            if self.fast_scan_check:
+                self.ui.mazatrol_list_widget.addItems(self.mazatrol_labels)
             self.ui.rename_mazatrol_button.setEnabled(True)
             self.ui.statusbar.showMessage('Можно переименовывать.')
             self.ui.info_window.insertPlainText(f'Файлов Mazatrol: {len(self.mazatrol_files)}\n')
@@ -236,8 +218,13 @@ class MyInterface(QtWidgets.QMainWindow):
             self.ui.info_window.insertPlainText(f'Файлов Mazatrol не найдено.\n')
 
         if len(self.fanuc_files) != 0:
+            if self.fast_scan_check:
+                self.ui.fanuc_list_widget.addItems(self.fanuc_labels)
             self.ui.rename_fanuc_button.setEnabled(True)
-            self.ui.statusbar.showMessage('Можно переименовывать.')
+            if self.scaner_thread.status:
+                self.ui.statusbar.showMessage('Можно переименовывать.')
+            else:
+                self.ui.statusbar.showMessage('Сканирование остановлено. Рекомендуется отсканировать снова.')
             self.ui.info_window.insertPlainText(f'Файлов Fanuc: {len(self.fanuc_files)}\n')
             self.ui.label_fanuc_list.setText(f'Файлов Fanuc: {len(self.fanuc_files)}')
         else:
@@ -251,7 +238,7 @@ class MyInterface(QtWidgets.QMainWindow):
         self.ui.progressBar.setValue(0)
 
         self.ui.scaner_button.setText('Сканировать')
-        self.ui.scaner_button.clicked.connect(self.scaner)
+        self.scaner_thread.status = False
 
     def rename_mazatrol(self, mazatrol_files):
         self.ui.info_window.clear()
@@ -313,13 +300,14 @@ class ScanerThread(QThread, MyInterface):
     def __init__(self):
         QThread.__init__(self)
         self.running = False
-        self.status = True
+        self.status = False
 
     def __del__(self):
         self.wait()
 
     def run(self):
         self.running = True
+        self.status = True
         for dir_paths, dir_names, file_names in os.walk(application.ui.cwd):
             if not self.status:
                 break
