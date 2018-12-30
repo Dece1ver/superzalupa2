@@ -25,7 +25,11 @@ class MyInterface(QtWidgets.QMainWindow):
         self.ui.rename_fanuc_button.setEnabled(False)
         self.ui.scaner_path_dialog_button.clicked.connect(self.get_path)
         self.ui.action.triggered.connect(self.show_settings)
+        self.ui.action_3.triggered.connect(self.show_help)
         self.ui.action_5.triggered.connect(self.close)
+        #self.splitter = QtWidgets.QSplitter(Qt.Horizontal)
+        #self.splitter.addWidget(self.ui.frame_3)
+        #self.splitter.addWidget(self.ui.lists_frame)
         self.ui.statusbar.showMessage('Кнопки переименовывателей станут активны после сканирования.')
         self.fast_scan_check = False
         self.scaner_thread = ScanerThread()
@@ -33,6 +37,11 @@ class MyInterface(QtWidgets.QMainWindow):
     def save_check_box_settings(self):
         # print(self.check_box.isChecked())
         self.fast_scan_check = self.check_box.isChecked()
+        
+    def show_help(self):
+        help_window = QtWidgets.QMessageBox(application)
+        help_window.exec()
+        
 
     def show_settings(self):
         settings = QtWidgets.QWidget(self, Qt.Window)
@@ -386,6 +395,7 @@ class FanucRenamer(QThread, MyInterface):
 
 if __name__ == '__main__':
     app = QtWidgets.QApplication([])
+    QtWidgets.QApplication.setStyle(QtWidgets.QStyleFactory.create('Fusion'))
     # splash = QtWidgets.QSplashScreen(QtGui.QPixmap('img.png'))
     # splash.show()
     application = MyInterface()
