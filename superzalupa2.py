@@ -1,404 +1,415 @@
 # -*- coding: utf-8 -*-
 
-from PyQt5 import QtWidgets, QtCore, QtGui
-from PyQt5.QtCore import QThread, pyqtSignal, Qt
-from design import Ui_MainWindow  # импорт сгенерированного файла дизайна
-from datetime import datetime
-from constants import badfiles
-import time
-import sys
-import os
+# Form implementation generated from reading ui file 'design.ui'
+#
+# Created by: PyQt5 UI code generator 5.11.3
+#
+# WARNING! All changes made in this file will be lost!
 
+from PyQt5 import QtCore, QtGui, QtWidgets
 
-class MyInterface(QtWidgets.QMainWindow):
-
-    def __init__(self):
-        super(MyInterface, self).__init__()
-        self.ui = Ui_MainWindow()
-        self.ui.setupUi(self)
-        self.ui.cwd = os.getcwd()
-        self.ui.scaner_path.setText(self.ui.cwd)
-        self.ui.scaner_button.clicked.connect(self.scaner_button_handler)
-        self.ui.rename_mazatrol_button.clicked.connect(self.rename_mazatrol)
-        self.ui.rename_fanuc_button.clicked.connect(self.rename_fanuc)
-        self.ui.rename_mazatrol_button.setEnabled(False)
-        self.ui.rename_fanuc_button.setEnabled(False)
-        self.ui.scaner_path_dialog_button.clicked.connect(self.get_path)
-        self.ui.action.triggered.connect(self.show_settings)
-        self.ui.action_3.triggered.connect(self.show_help)
-        self.ui.action_5.triggered.connect(self.close)
-        #self.splitter = QtWidgets.QSplitter(Qt.Horizontal)
-        #self.splitter.addWidget(self.ui.frame_3)
-        #self.splitter.addWidget(self.ui.lists_frame)
-        self.ui.statusbar.showMessage('Кнопки переименовывателей станут активны после сканирования.')
-        self.fast_scan_check = False
-        self.scaner_thread = ScanerThread()
-
-    def save_check_box_settings(self):
-        # print(self.check_box.isChecked())
-        self.fast_scan_check = self.check_box.isChecked()
-        
-    def show_help(self):
-        help_window = QtWidgets.QMessageBox(application)
-        help_window.exec()
-        
-
-    def show_settings(self):
-        settings = QtWidgets.QWidget(self, Qt.Window)
-        settings.setWindowModality(QtCore.Qt.WindowModal)
-        settings.resize(400, 300)
-        settings.setWindowTitle('Настройки')
+class Ui_MainWindow(object):
+    def setupUi(self, MainWindow):
+        MainWindow.setObjectName("MainWindow")
+        MainWindow.setEnabled(True)
+        MainWindow.resize(800, 600)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Preferred)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(MainWindow.sizePolicy().hasHeightForWidth())
+        MainWindow.setSizePolicy(sizePolicy)
+        MainWindow.setMinimumSize(QtCore.QSize(800, 600))
+        MainWindow.setContextMenuPolicy(QtCore.Qt.DefaultContextMenu)
+        icon = QtGui.QIcon()
+        icon.addPixmap(QtGui.QPixmap("window.ico"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        MainWindow.setWindowIcon(icon)
+        MainWindow.setDocumentMode(False)
+        MainWindow.setDockNestingEnabled(False)
+        MainWindow.setUnifiedTitleAndToolBarOnMac(False)
+        self.centralwidget = QtWidgets.QWidget(MainWindow)
+        self.centralwidget.setObjectName("centralwidget")
+        self.gridLayout = QtWidgets.QGridLayout(self.centralwidget)
+        self.gridLayout.setHorizontalSpacing(6)
+        self.gridLayout.setVerticalSpacing(0)
+        self.gridLayout.setObjectName("gridLayout")
+        self.lists_frame = QtWidgets.QFrame(self.centralwidget)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Expanding)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.lists_frame.sizePolicy().hasHeightForWidth())
+        self.lists_frame.setSizePolicy(sizePolicy)
+        self.lists_frame.setMinimumSize(QtCore.QSize(782, 250))
+        self.lists_frame.setFrameShape(QtWidgets.QFrame.NoFrame)
+        self.lists_frame.setFrameShadow(QtWidgets.QFrame.Raised)
+        self.lists_frame.setLineWidth(0)
+        self.lists_frame.setObjectName("lists_frame")
+        self.gridLayout_4 = QtWidgets.QGridLayout(self.lists_frame)
+        self.gridLayout_4.setContentsMargins(0, 0, 0, 0)
+        self.gridLayout_4.setSpacing(6)
+        self.gridLayout_4.setObjectName("gridLayout_4")
+        self.fanuc_frame = QtWidgets.QFrame(self.lists_frame)
+        self.fanuc_frame.setFrameShape(QtWidgets.QFrame.NoFrame)
+        self.fanuc_frame.setFrameShadow(QtWidgets.QFrame.Sunken)
+        self.fanuc_frame.setObjectName("fanuc_frame")
+        self.gridLayout_6 = QtWidgets.QGridLayout(self.fanuc_frame)
+        self.gridLayout_6.setContentsMargins(0, 0, 0, 0)
+        self.gridLayout_6.setHorizontalSpacing(6)
+        self.gridLayout_6.setVerticalSpacing(3)
+        self.gridLayout_6.setObjectName("gridLayout_6")
+        self.rename_fanuc_button = QtWidgets.QPushButton(self.fanuc_frame)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Fixed)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.rename_fanuc_button.sizePolicy().hasHeightForWidth())
+        self.rename_fanuc_button.setSizePolicy(sizePolicy)
+        self.rename_fanuc_button.setObjectName("rename_fanuc_button")
+        self.gridLayout_6.addWidget(self.rename_fanuc_button, 2, 0, 1, 2)
+        self.fanuc_list_widget = QtWidgets.QListWidget(self.fanuc_frame)
+        self.fanuc_list_widget.setEnabled(True)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Expanding)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.fanuc_list_widget.sizePolicy().hasHeightForWidth())
+        self.fanuc_list_widget.setSizePolicy(sizePolicy)
+        font = QtGui.QFont()
+        font.setFamily("Consolas")
+        font.setPointSize(9)
+        self.fanuc_list_widget.setFont(font)
+        self.fanuc_list_widget.setAcceptDrops(False)
+        self.fanuc_list_widget.setFrameShape(QtWidgets.QFrame.Box)
+        self.fanuc_list_widget.setFrameShadow(QtWidgets.QFrame.Sunken)
+        self.fanuc_list_widget.setLineWidth(1)
+        self.fanuc_list_widget.setMidLineWidth(0)
+        self.fanuc_list_widget.setObjectName("fanuc_list_widget")
+        self.gridLayout_6.addWidget(self.fanuc_list_widget, 1, 0, 1, 2)
+        self.label_fanuc_list = QtWidgets.QToolButton(self.fanuc_frame)
+        self.label_fanuc_list.setEnabled(False)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Fixed)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.label_fanuc_list.sizePolicy().hasHeightForWidth())
+        self.label_fanuc_list.setSizePolicy(sizePolicy)
+        self.label_fanuc_list.setAutoFillBackground(False)
+        self.label_fanuc_list.setInputMethodHints(QtCore.Qt.ImhNone)
+        self.label_fanuc_list.setAutoRaise(True)
+        self.label_fanuc_list.setObjectName("label_fanuc_list")
+        self.gridLayout_6.addWidget(self.label_fanuc_list, 0, 0, 1, 2)
+        self.gridLayout_4.addWidget(self.fanuc_frame, 0, 0, 1, 1)
+        self.mazatrol_frame = QtWidgets.QFrame(self.lists_frame)
+        self.mazatrol_frame.setFrameShape(QtWidgets.QFrame.NoFrame)
+        self.mazatrol_frame.setFrameShadow(QtWidgets.QFrame.Raised)
+        self.mazatrol_frame.setObjectName("mazatrol_frame")
+        self.gridLayout_7 = QtWidgets.QGridLayout(self.mazatrol_frame)
+        self.gridLayout_7.setContentsMargins(0, 0, 0, 0)
+        self.gridLayout_7.setHorizontalSpacing(6)
+        self.gridLayout_7.setVerticalSpacing(3)
+        self.gridLayout_7.setObjectName("gridLayout_7")
+        self.rename_mazatrol_button = QtWidgets.QPushButton(self.mazatrol_frame)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Fixed)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.rename_mazatrol_button.sizePolicy().hasHeightForWidth())
+        self.rename_mazatrol_button.setSizePolicy(sizePolicy)
+        self.rename_mazatrol_button.setObjectName("rename_mazatrol_button")
+        self.gridLayout_7.addWidget(self.rename_mazatrol_button, 2, 0, 1, 2)
+        self.mazatrol_list_widget = QtWidgets.QListWidget(self.mazatrol_frame)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Expanding)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.mazatrol_list_widget.sizePolicy().hasHeightForWidth())
+        self.mazatrol_list_widget.setSizePolicy(sizePolicy)
+        font = QtGui.QFont()
+        font.setFamily("Consolas")
+        font.setPointSize(9)
+        self.mazatrol_list_widget.setFont(font)
+        self.mazatrol_list_widget.viewport().setProperty("cursor", QtGui.QCursor(QtCore.Qt.ArrowCursor))
+        self.mazatrol_list_widget.setAutoFillBackground(False)
+        self.mazatrol_list_widget.setInputMethodHints(QtCore.Qt.ImhNone)
+        self.mazatrol_list_widget.setFrameShape(QtWidgets.QFrame.Box)
+        self.mazatrol_list_widget.setFrameShadow(QtWidgets.QFrame.Sunken)
+        self.mazatrol_list_widget.setLineWidth(1)
+        self.mazatrol_list_widget.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAsNeeded)
+        self.mazatrol_list_widget.setResizeMode(QtWidgets.QListView.Adjust)
+        self.mazatrol_list_widget.setViewMode(QtWidgets.QListView.ListMode)
+        self.mazatrol_list_widget.setModelColumn(0)
+        self.mazatrol_list_widget.setUniformItemSizes(False)
+        self.mazatrol_list_widget.setBatchSize(100)
+        self.mazatrol_list_widget.setWordWrap(False)
+        self.mazatrol_list_widget.setSelectionRectVisible(False)
+        self.mazatrol_list_widget.setObjectName("mazatrol_list_widget")
+        self.gridLayout_7.addWidget(self.mazatrol_list_widget, 1, 0, 1, 2)
+        self.label_mazatrol_list = QtWidgets.QToolButton(self.mazatrol_frame)
+        self.label_mazatrol_list.setEnabled(False)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Fixed)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.label_mazatrol_list.sizePolicy().hasHeightForWidth())
+        self.label_mazatrol_list.setSizePolicy(sizePolicy)
+        self.label_mazatrol_list.setAutoRaise(True)
+        self.label_mazatrol_list.setObjectName("label_mazatrol_list")
+        self.gridLayout_7.addWidget(self.label_mazatrol_list, 0, 0, 1, 2)
+        self.gridLayout_4.addWidget(self.mazatrol_frame, 0, 1, 1, 1)
+        self.lists_line = QtWidgets.QFrame(self.lists_frame)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Preferred)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.lists_line.sizePolicy().hasHeightForWidth())
+        self.lists_line.setSizePolicy(sizePolicy)
+        self.lists_line.setMinimumSize(QtCore.QSize(0, 1))
+        self.lists_line.setFrameShape(QtWidgets.QFrame.HLine)
+        self.lists_line.setFrameShadow(QtWidgets.QFrame.Sunken)
+        self.lists_line.setObjectName("lists_line")
+        self.gridLayout_4.addWidget(self.lists_line, 1, 0, 1, 2)
+        self.gridLayout.addWidget(self.lists_frame, 1, 0, 1, 1)
+        self.frame = QtWidgets.QFrame(self.centralwidget)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Preferred)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.frame.sizePolicy().hasHeightForWidth())
+        self.frame.setSizePolicy(sizePolicy)
+        self.frame.setMinimumSize(QtCore.QSize(782, 0))
+        self.frame.setFrameShape(QtWidgets.QFrame.NoFrame)
+        self.frame.setFrameShadow(QtWidgets.QFrame.Raised)
+        self.frame.setLineWidth(0)
+        self.frame.setObjectName("frame")
+        self.gridLayout_3 = QtWidgets.QGridLayout(self.frame)
+        self.gridLayout_3.setContentsMargins(0, 0, 0, 0)
+        self.gridLayout_3.setHorizontalSpacing(0)
+        self.gridLayout_3.setVerticalSpacing(3)
+        self.gridLayout_3.setObjectName("gridLayout_3")
+        self.info_window = QtWidgets.QPlainTextEdit(self.frame)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.MinimumExpanding, QtWidgets.QSizePolicy.Ignored)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.info_window.sizePolicy().hasHeightForWidth())
+        self.info_window.setSizePolicy(sizePolicy)
+        self.info_window.setMinimumSize(QtCore.QSize(0, 150))
+        font = QtGui.QFont()
+        font.setFamily("Consolas")
+        font.setPointSize(9)
+        self.info_window.setFont(font)
+        self.info_window.viewport().setProperty("cursor", QtGui.QCursor(QtCore.Qt.ArrowCursor))
+        self.info_window.setMouseTracking(False)
+        self.info_window.setFocusPolicy(QtCore.Qt.StrongFocus)
+        self.info_window.setContextMenuPolicy(QtCore.Qt.DefaultContextMenu)
+        self.info_window.setAcceptDrops(False)
+        self.info_window.setFrameShape(QtWidgets.QFrame.Box)
+        self.info_window.setFrameShadow(QtWidgets.QFrame.Sunken)
+        self.info_window.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAsNeeded)
+        self.info_window.setSizeAdjustPolicy(QtWidgets.QAbstractScrollArea.AdjustToContents)
+        self.info_window.setLineWrapMode(QtWidgets.QPlainTextEdit.WidgetWidth)
+        self.info_window.setReadOnly(True)
+        self.info_window.setPlainText("")
+        self.info_window.setCursorWidth(1)
+        self.info_window.setCenterOnScroll(False)
+        self.info_window.setObjectName("info_window")
+        self.gridLayout_3.addWidget(self.info_window, 2, 0, 1, 1)
+        self.label_info_window = QtWidgets.QLabel(self.frame)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(settings.sizePolicy().hasHeightForWidth())
-        settings.setSizePolicy(sizePolicy)
-        icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap("window.ico"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        settings.setWindowIcon(icon)
-        self.label = QtWidgets.QLabel(settings)
-        self.label.setText('Настройки:')
-        self.label.setGeometry(QtCore.QRect(10, 0, 391, 31))
-        self.label.setObjectName("label")
-        self.line = QtWidgets.QFrame(settings)
-        self.line.setGeometry(QtCore.QRect(10, 20, 381, 16))
-        self.line.setFrameShape(QtWidgets.QFrame.HLine)
-        self.line.setFrameShadow(QtWidgets.QFrame.Sunken)
-        self.line.setObjectName("line")
-        self.check_box = QtWidgets.QCheckBox(settings)
-        self.check_box.setText('Быстрое сканирование')
-        self.check_box.setGeometry(QtCore.QRect(10, 30, 191, 17))
-        self.check_box.setObjectName("check_box")
-        self.check_box.setChecked(self.fast_scan_check)
-        self.check_box.clicked.connect(self.save_check_box_settings)
-        self.label_2 = QtWidgets.QLabel(settings)
-        self.label_2.setText('При сканировании отключает моментальное добавление элементов в списки интерфейса. Рекомендуется использовать когда предполагаемое количество управляющих программ больше тысячи.')
-        self.label_2.setGeometry(QtCore.QRect(10, 50, 381, 41))
-        self.label_2.setWordWrap(True)
-        self.label_2.setIndent(0)
-        self.label_2.setObjectName("label_2")
-        self.line_2 = QtWidgets.QFrame(settings)
-        self.line_2.setGeometry(QtCore.QRect(10, 90, 381, 16))
-        self.line_2.setFrameShape(QtWidgets.QFrame.HLine)
-        self.line_2.setFrameShadow(QtWidgets.QFrame.Sunken)
-        self.line_2.setObjectName("line_2")
-        self.label_3 = QtWidgets.QLabel(settings)
-        self.label_3.setText('Расширения файлов исключенные для сканирования:')
-        self.label_3.setGeometry(QtCore.QRect(10, 100, 381, 16))
-        self.label_3.setObjectName("label_3")
-        self.pushButton = QtWidgets.QPushButton(settings)
-        self.pushButton.setText('Сохранить')
-        self.pushButton.setGeometry(QtCore.QRect(300, 270, 91, 23))
-        self.pushButton.setObjectName("pushButton")
-        self.pushButton.clicked.connect(settings.close)
-        self.textBrowser = QtWidgets.QTextBrowser(settings)
-        self.textBrowser.setGeometry(QtCore.QRect(10, 120, 381, 141))
-        self.textBrowser.setStyleSheet("font: 12pt \"Consolas\";")
-        self.textBrowser.setObjectName("textBrowser")
-        self.textBrowser.setHtml("<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
-                                 "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
-                                 "p, li { white-space: pre-wrap; }\n"
-                                 "</style></head><body style=\" font-family:\'Consolas\'; font-size:12pt; font-weight:400; font-style:normal;\">\n"
-                                 "<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:\'MS Shell Dlg 2\'; font-size:8.25pt;\"><br /></p></body></html>")
-        settings.show()
+        sizePolicy.setHeightForWidth(self.label_info_window.sizePolicy().hasHeightForWidth())
+        self.label_info_window.setSizePolicy(sizePolicy)
+        self.label_info_window.setObjectName("label_info_window")
+        self.gridLayout_3.addWidget(self.label_info_window, 1, 0, 1, 1)
+        self.gridLayout.addWidget(self.frame, 2, 0, 1, 1)
+        self.label_frame = QtWidgets.QFrame(self.centralwidget)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Maximum)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.label_frame.sizePolicy().hasHeightForWidth())
+        self.label_frame.setSizePolicy(sizePolicy)
+        self.label_frame.setMinimumSize(QtCore.QSize(782, 80))
+        self.label_frame.setFrameShape(QtWidgets.QFrame.NoFrame)
+        self.label_frame.setFrameShadow(QtWidgets.QFrame.Raised)
+        self.label_frame.setLineWidth(0)
+        self.label_frame.setObjectName("label_frame")
+        self.gridLayout_2 = QtWidgets.QGridLayout(self.label_frame)
+        self.gridLayout_2.setContentsMargins(0, 0, 0, 0)
+        self.gridLayout_2.setHorizontalSpacing(6)
+        self.gridLayout_2.setVerticalSpacing(0)
+        self.gridLayout_2.setObjectName("gridLayout_2")
+        self.frame_3 = QtWidgets.QFrame(self.label_frame)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Preferred)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.frame_3.sizePolicy().hasHeightForWidth())
+        self.frame_3.setSizePolicy(sizePolicy)
+        self.frame_3.setFrameShape(QtWidgets.QFrame.NoFrame)
+        self.frame_3.setFrameShadow(QtWidgets.QFrame.Raised)
+        self.frame_3.setObjectName("frame_3")
+        self.gridLayout_5 = QtWidgets.QGridLayout(self.frame_3)
+        self.gridLayout_5.setContentsMargins(0, 0, 0, 0)
+        self.gridLayout_5.setSpacing(6)
+        self.gridLayout_5.setObjectName("gridLayout_5")
+        self.scaner_path = QtWidgets.QLineEdit(self.frame_3)
+        self.scaner_path.setEnabled(True)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Fixed)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.scaner_path.sizePolicy().hasHeightForWidth())
+        self.scaner_path.setSizePolicy(sizePolicy)
+        self.scaner_path.setMinimumSize(QtCore.QSize(0, 21))
+        font = QtGui.QFont()
+        font.setKerning(True)
+        self.scaner_path.setFont(font)
+        self.scaner_path.setMouseTracking(True)
+        self.scaner_path.setFocusPolicy(QtCore.Qt.ClickFocus)
+        self.scaner_path.setLayoutDirection(QtCore.Qt.LeftToRight)
+        self.scaner_path.setText("")
+        self.scaner_path.setReadOnly(True)
+        self.scaner_path.setObjectName("scaner_path")
+        self.gridLayout_5.addWidget(self.scaner_path, 0, 1, 1, 1)
+        self.label_line = QtWidgets.QFrame(self.frame_3)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Fixed)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.label_line.sizePolicy().hasHeightForWidth())
+        self.label_line.setSizePolicy(sizePolicy)
+        self.label_line.setFrameShape(QtWidgets.QFrame.HLine)
+        self.label_line.setFrameShadow(QtWidgets.QFrame.Sunken)
+        self.label_line.setObjectName("label_line")
+        self.gridLayout_5.addWidget(self.label_line, 1, 0, 1, 5)
+        self.label_path = QtWidgets.QLabel(self.frame_3)
+        self.label_path.setEnabled(True)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.label_path.sizePolicy().hasHeightForWidth())
+        self.label_path.setSizePolicy(sizePolicy)
+        font = QtGui.QFont()
+        font.setFamily("MS Shell Dlg 2")
+        font.setBold(False)
+        font.setItalic(False)
+        font.setUnderline(False)
+        font.setWeight(50)
+        font.setStrikeOut(False)
+        font.setKerning(True)
+        font.setStyleStrategy(QtGui.QFont.PreferDefault)
+        self.label_path.setFont(font)
+        self.label_path.setCursor(QtGui.QCursor(QtCore.Qt.ArrowCursor))
+        self.label_path.setLayoutDirection(QtCore.Qt.LeftToRight)
+        self.label_path.setObjectName("label_path")
+        self.gridLayout_5.addWidget(self.label_path, 0, 0, 1, 1)
+        self.scaner_path_dialog_button = QtWidgets.QPushButton(self.frame_3)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Fixed)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.scaner_path_dialog_button.sizePolicy().hasHeightForWidth())
+        self.scaner_path_dialog_button.setSizePolicy(sizePolicy)
+        self.scaner_path_dialog_button.setMinimumSize(QtCore.QSize(0, 23))
+        self.scaner_path_dialog_button.setObjectName("scaner_path_dialog_button")
+        self.gridLayout_5.addWidget(self.scaner_path_dialog_button, 0, 2, 1, 1)
+        self.scaner_button = QtWidgets.QPushButton(self.frame_3)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Preferred)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.scaner_button.sizePolicy().hasHeightForWidth())
+        self.scaner_button.setSizePolicy(sizePolicy)
+        self.scaner_button.setMinimumSize(QtCore.QSize(125, 0))
+        font = QtGui.QFont()
+        font.setFamily("MS Shell Dlg 2")
+        font.setPointSize(8)
+        font.setBold(False)
+        font.setItalic(False)
+        font.setUnderline(False)
+        font.setWeight(50)
+        font.setStrikeOut(False)
+        self.scaner_button.setFont(font)
+        self.scaner_button.setObjectName("scaner_button")
+        self.gridLayout_5.addWidget(self.scaner_button, 0, 4, 1, 1)
+        self.gridLayout_2.addWidget(self.frame_3, 1, 0, 1, 2)
+        self.frame_2 = QtWidgets.QFrame(self.label_frame)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Fixed)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.frame_2.sizePolicy().hasHeightForWidth())
+        self.frame_2.setSizePolicy(sizePolicy)
+        self.frame_2.setMinimumSize(QtCore.QSize(0, 50))
+        self.frame_2.setMaximumSize(QtCore.QSize(16777215, 68))
+        self.frame_2.setFrameShape(QtWidgets.QFrame.NoFrame)
+        self.frame_2.setFrameShadow(QtWidgets.QFrame.Plain)
+        self.frame_2.setLineWidth(0)
+        self.frame_2.setObjectName("frame_2")
+        self.horizontalLayout = QtWidgets.QHBoxLayout(self.frame_2)
+        self.horizontalLayout.setContentsMargins(0, 0, 0, 0)
+        self.horizontalLayout.setSpacing(14)
+        self.horizontalLayout.setObjectName("horizontalLayout")
+        self.label_superzalupa = QtWidgets.QLabel(self.frame_2)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Fixed)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.label_superzalupa.sizePolicy().hasHeightForWidth())
+        self.label_superzalupa.setSizePolicy(sizePolicy)
+        self.label_superzalupa.setMinimumSize(QtCore.QSize(381, 0))
+        self.label_superzalupa.setMaximumSize(QtCore.QSize(16777215, 388))
+        self.label_superzalupa.setMouseTracking(True)
+        self.label_superzalupa.setLayoutDirection(QtCore.Qt.LeftToRight)
+        self.label_superzalupa.setAutoFillBackground(False)
+        self.label_superzalupa.setStyleSheet("font: 32pt \"Agency FB\";")
+        self.label_superzalupa.setObjectName("label_superzalupa")
+        self.horizontalLayout.addWidget(self.label_superzalupa)
+        self.progressBar = QtWidgets.QProgressBar(self.frame_2)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Fixed)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.progressBar.sizePolicy().hasHeightForWidth())
+        self.progressBar.setSizePolicy(sizePolicy)
+        self.progressBar.setMinimumSize(QtCore.QSize(0, 0))
+        font = QtGui.QFont()
+        font.setBold(False)
+        font.setItalic(False)
+        font.setUnderline(False)
+        font.setWeight(50)
+        self.progressBar.setFont(font)
+        self.progressBar.setToolTip("")
+        self.progressBar.setMaximum(1)
+        self.progressBar.setProperty("value", 0)
+        self.progressBar.setTextVisible(False)
+        self.progressBar.setInvertedAppearance(False)
+        self.progressBar.setObjectName("progressBar")
+        self.horizontalLayout.addWidget(self.progressBar)
+        self.gridLayout_2.addWidget(self.frame_2, 0, 0, 1, 2)
+        self.gridLayout.addWidget(self.label_frame, 0, 0, 1, 1)
+        MainWindow.setCentralWidget(self.centralwidget)
+        self.menubar = QtWidgets.QMenuBar(MainWindow)
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 800, 21))
+        self.menubar.setObjectName("menubar")
+        self.menu = QtWidgets.QMenu(self.menubar)
+        self.menu.setObjectName("menu")
+        MainWindow.setMenuBar(self.menubar)
+        self.statusbar = QtWidgets.QStatusBar(MainWindow)
+        self.statusbar.setObjectName("statusbar")
+        MainWindow.setStatusBar(self.statusbar)
+        self.action = QtWidgets.QAction(MainWindow)
+        self.action.setObjectName("action")
+        self.action_3 = QtWidgets.QAction(MainWindow)
+        self.action_3.setObjectName("action_3")
+        self.action_5 = QtWidgets.QAction(MainWindow)
+        self.action_5.setObjectName("action_5")
+        self.menu.addAction(self.action)
+        self.menu.addSeparator()
+        self.menu.addAction(self.action_3)
+        self.menu.addSeparator()
+        self.menu.addAction(self.action_5)
+        self.menubar.addAction(self.menu.menuAction())
 
-    # получает путь с кнопки
-    def get_path(self):
-        new_path = QtWidgets.QFileDialog.getExistingDirectory()
-        if new_path != '':
-            self.ui.cwd = new_path
-        self.ui.scaner_path.setText(self.ui.cwd)
-        self.ui.rename_mazatrol_button.setEnabled(False)
-        self.ui.rename_fanuc_button.setEnabled(False)
+        self.retranslateUi(MainWindow)
+        QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
-    # получает название детали из мазаковской программы
-    def get_mazatrol_name(self, full_path_to_file):
-        try:
-            with open(full_path_to_file, 'rb') as file:
-                file.seek(80)
-                file_name = file.read(32).rstrip(b'\x00').decode()
-                file_name = file_name.replace('\\', '-').replace('*', '-').replace('/', '-').strip(' ')
-                return file_name
-        except ZeroDivisionError:
-            return f'Не удалось получить имя файла: {self.full_path_to_file}'
-            self.error_files.append(self.full_path_to_file)
-
-    def check_fanuc_programm(self, full_path_to_file):
-        try:
-            with open(full_path_to_file, 'r') as f:
-                first_symbol = f.read(1)
-                if first_symbol in ('%', 'O'):
-                    return True
-                else:
-                    return False
-        except PermissionError:
-            return False
-        except UnicodeDecodeError:
-            return False
-
-    # получает название детали из фануковской программы
-    def get_fanuc_name(self, full_path_to_file):
-        try:
-            with open(full_path_to_file, 'rb') as f:
-                f.seek(2)
-                file_name = f.read(55)
-                if b')' not in file_name:
-                    try:
-                        file_name.decode()
-                        file_name = 'Название отсутствует!'
-                    except UnicodeDecodeError:
-                        file_name = 'Скорее всего это не программа Fanuc!'
-                else:
-                    file_name = file_name.split(b'(')
-                    file_name = file_name[1].split(b')')
-                    file_name = file_name[0].decode()
-                    file_name = file_name.replace('\\', '-').replace('*', '-').replace('/', '-').strip(' ')
-
-            return file_name
-        except ZeroDivisionError:
-            return f'Не удалось получить имя файла: {full_path_to_file}'
-            self.error_files.append(self.full_path_to_file)
-
-    def scaner(self):
-        self.mazatrol_files = []
-        self.fanuc_files = []
-        self.error_files = []
-        if self.fast_scan_check:
-            self.mazatrol_labels = []
-            self.fanuc_labels = []
-
-        self.ui.mazatrol_list_widget.clear()
-        self.ui.fanuc_list_widget.clear()
-        self.ui.info_window.clear()
-        self.ui.info_window.insertPlainText(f'Сканирование директории "{self.ui.cwd}"...\n')
-        self.ui.progressBar.setRange(0, 0)
-        self.ui.progressBar.setValue(-1)
-        self.scaner_thread.started.connect(self.on_start)
-        self.scaner_thread.scaner_signal.connect(self.add_file)
-        self.scaner_thread.finished.connect(self.finish_scan)
-        self.scaner_thread.start()
-
-    def scaner_button_handler(self):
-        # print(self.scaner_thread.status)
-        if self.scaner_thread.status:
-            self.stop_scaner()
-        else:
-            self.scaner()
-
-    def on_start(self):
-        pass
-        self.ui.scaner_button.setText('Остановить')
-        # self.ui.scaner_button.setDisabled(True)
-
-    def stop_scaner(self):
-        self.scaner_thread.running = False
-
-    def add_file(self, full_path_to_file, file_label):
-        if self.fast_scan_check:
-            if full_path_to_file.upper().endswith('.PBG'):
-                self.mazatrol_labels.append(file_label)
-            else:
-                self.fanuc_labels.append(file_label)
-        else:
-            if full_path_to_file.upper().endswith('.PBG'):
-                item = QtWidgets.QListWidgetItem()
-                self.ui.mazatrol_list_widget.addItem(item)
-                item.setText(file_label)
-                self.ui.mazatrol_list_widget.setCurrentItem(item)
-                self.ui.label_mazatrol_list.setText(f'Файлов Mazatrol: {len(self.mazatrol_files)}')
-            else:
-                item = QtWidgets.QListWidgetItem()
-                self.ui.fanuc_list_widget.addItem(item)
-                item.setText(file_label)
-                self.ui.fanuc_list_widget.setCurrentItem(item)
-                self.ui.label_fanuc_list.setText(f'Файлов Fanuc: {len(self.fanuc_files)}')
-
-    def finish_scan(self):
-
-        if len(self.mazatrol_files) != 0:
-            if self.fast_scan_check:
-                self.ui.mazatrol_list_widget.addItems(self.mazatrol_labels)
-            self.ui.rename_mazatrol_button.setEnabled(True)
-            self.ui.statusbar.showMessage('Можно переименовывать.')
-            self.ui.info_window.insertPlainText(f'Файлов Mazatrol: {len(self.mazatrol_files)}\n')
-            self.ui.label_mazatrol_list.setText(f'Файлов Mazatrol: {len(self.mazatrol_files)}')
-        else:
-            self.ui.label_mazatrol_list.setText(f'Файлов Mazatrol не найдено.')
-            self.ui.info_window.insertPlainText(f'Файлов Mazatrol не найдено.\n')
-
-        if len(self.fanuc_files) != 0:
-            if self.fast_scan_check:
-                self.ui.fanuc_list_widget.addItems(self.fanuc_labels)
-            self.ui.rename_fanuc_button.setEnabled(True)
-            if self.scaner_thread.status:
-                self.ui.statusbar.showMessage('Можно переименовывать.')
-            else:
-                self.ui.statusbar.showMessage('Сканирование остановлено. Рекомендуется отсканировать снова.')
-            self.ui.info_window.insertPlainText(f'Файлов Fanuc: {len(self.fanuc_files)}\n')
-            self.ui.label_fanuc_list.setText(f'Файлов Fanuc: {len(self.fanuc_files)}')
-        else:
-            self.ui.label_fanuc_list.setText(f'Файлов Fanuc не найдено.')
-            self.ui.info_window.insertPlainText(f'Файлов Fanuc не найдено.\n')
-
-        if self.mazatrol_files == 0 and self.fanuc_files == 0:
-            self.ui.statusbar.showMessage('Нечего переименовывать.')
-
-        self.ui.progressBar.setRange(0, 100)
-        self.ui.progressBar.setValue(0)
-
-        self.ui.scaner_button.setText('Сканировать')
-        self.scaner_thread.status = False
-
-    def rename_mazatrol(self, mazatrol_files):
-        self.ui.info_window.clear()
-        self.ui.progressBar.setRange(0, len(self.mazatrol_files))
-        self.ui.progressBar.setValue(0)
-        self.progress_bar_steps = 0
-        self.count = 0
-        self.rename_mazatrol_thread = MazatrolRenamer()
-        self.rename_mazatrol_thread.mazatrol_signal.connect(self.add_mazatrol_file, QtCore.Qt.QueuedConnection)
-        self.rename_mazatrol_thread.finished.connect(self.finish_rename_mazatrol)
-        self.rename_mazatrol_thread.start()
-
-    def add_mazatrol_file(self, file_name, new_file_name):
-        if file_name == new_file_name:
-            self.ui.info_window.insertPlainText(f'Программа "{file_name}" уже называется как надо, пропуск.\n')
-        else:
-            self.ui.info_window.insertPlainText(f'{file_name} переименован в {new_file_name}\n')
-            self.count += 1
-        self.ui.progressBar.setValue(self.progress_bar_steps)
-        self.progress_bar_steps += 1
-        self.ui.info_window.ensureCursorVisible()
-
-    def finish_rename_mazatrol(self):
-        self.ui.info_window.insertPlainText(f'Переименовано {self.count} из {len(self.mazatrol_files)} файлов.\n')
-        self.ui.rename_mazatrol_button.setEnabled(False)
-        self.ui.statusbar.showMessage('Переименовывание завершено.')
-
-    def rename_fanuc(self, fanuc_files):
-        self.ui.info_window.clear()
-        self.ui.progressBar.setRange(0, len(self.fanuc_files))
-        self.ui.progressBar.setValue(0)
-        self.progress_bar_steps = 0
-        self.count = 0
-        self.rename_fanuc_thread = FanucRenamer()
-        self.rename_fanuc_thread.fanuc_signal.connect(self.add_fanuc_file, QtCore.Qt.QueuedConnection)
-        self.rename_fanuc_thread.finished.connect(self.finish_rename_fanuc)
-        self.rename_fanuc_thread.start()
-
-    def add_fanuc_file(self, file_name, new_file_name):
-        if file_name == new_file_name:
-            self.ui.info_window.insertPlainText(f'Программа "{file_name}" уже называется как надо, пропуск.\n')
-        else:
-            self.ui.info_window.insertPlainText(f'{file_name} переименован в {new_file_name}\n')
-            self.count += 1
-        self.progress_bar_steps += 1
-        self.ui.progressBar.setValue(self.progress_bar_steps)
-        self.ui.info_window.ensureCursorVisible()
-
-    def finish_rename_fanuc(self):
-        self.ui.info_window.insertPlainText(f'Переименовано {self.count} из {len(self.fanuc_files)} файлов.\n')
-        self.ui.rename_fanuc_button.setEnabled(False)
-        self.ui.statusbar.showMessage('Переименовывание завершено.')
-
-
-class ScanerThread(QThread, MyInterface):
-
-    scaner_signal = pyqtSignal(str, str)
-
-    def __init__(self):
-        QThread.__init__(self)
-        self.running = False
-        self.status = False
-
-    def __del__(self):
-        self.wait()
-
-    def run(self):
-        self.running = True
-        self.status = True
-        for dir_paths, dir_names, file_names in os.walk(application.ui.cwd):
-            if not self.status:
-                break
-            for file in file_names:
-                if not self.running:
-                    self.status = False
-                    break
-                full_path_to_file = os.path.join(dir_paths, file)
-                if full_path_to_file.upper().endswith('.PBG'):
-                    application.mazatrol_files.append(full_path_to_file)
-                    programm_name = application.get_mazatrol_name(full_path_to_file)
-                    file_label = f'{file: <8}:({programm_name})'
-                    self.scaner_signal.emit(full_path_to_file, file_label)
-                else:
-                    if not full_path_to_file.upper().endswith(badfiles):
-                        check = self.check_fanuc_programm(full_path_to_file)
-                        if check:
-                            application.fanuc_files.append(full_path_to_file)
-                            programm_name = application.get_fanuc_name(full_path_to_file)
-                            file_label = f'{file: <8}:({programm_name})'
-                            self.scaner_signal.emit(full_path_to_file, file_label)
-
-
-class MazatrolRenamer(QThread, MyInterface):
-
-    mazatrol_signal = pyqtSignal(str, str)
-
-    def __init__(self):
-        QThread.__init__(self)
-
-    def __del__(self):
-        self.wait()
-
-    def run(self):
-        for path_to_file in application.mazatrol_files:
-            file_dir, file_name = os.path.split(path_to_file)
-            new_file_name = application.get_mazatrol_name(path_to_file) + '.PBG'
-            if file_name == new_file_name:
-                self.mazatrol_signal.emit(file_name, new_file_name)
-                continue
-            new_file_path = os.path.join(file_dir, new_file_name)
-            if os.path.isfile(new_file_path):
-                time.sleep(0.001)
-                new_file_path = new_file_path[:-4]
-                current_time = datetime.time(datetime.now()).strftime("%M-%S-%f")
-                new_file_path += f'(копия {current_time}).PBG'
-            os.rename(path_to_file, new_file_path)
-            self.mazatrol_signal.emit(file_name, new_file_name)
-
-
-class FanucRenamer(QThread, MyInterface):
-
-    fanuc_signal = pyqtSignal(str, str)
-
-    def __init__(self):
-        QThread.__init__(self)
-
-    def __del__(self):
-        self.wait()
-
-    def run(self):
-        for path_to_file in application.fanuc_files:
-            file_dir, file_name = os.path.split(path_to_file)
-            new_file_name = application.get_fanuc_name(path_to_file)
-            if file_name == new_file_name:
-                self.fanuc_signal.emit(file_name, new_file_name)
-                continue
-            new_file_path = os.path.join(file_dir, new_file_name)
-            if os.path.isfile(new_file_path):
-                time.sleep(0.001)
-                current_time = datetime.time(datetime.now()).strftime("%M-%S-%f")
-                new_file_path += f'(копия {current_time})'
-            os.rename(path_to_file, new_file_path)
-            self.fanuc_signal.emit(file_name, new_file_name)
-
-
-if __name__ == '__main__':
-    app = QtWidgets.QApplication([])
-    QtWidgets.QApplication.setStyle(QtWidgets.QStyleFactory.create('Fusion'))
-    # splash = QtWidgets.QSplashScreen(QtGui.QPixmap('img.png'))
-    # splash.show()
-    application = MyInterface()
-    application.show()
-    # splash.finish(application)
-    sys.exit(app.exec())
+    def retranslateUi(self, MainWindow):
+        _translate = QtCore.QCoreApplication.translate
+        MainWindow.setWindowTitle(_translate("MainWindow", "Superzalupa 2"))
+        self.rename_fanuc_button.setText(_translate("MainWindow", "Переименовать файлы Fanuc"))
+        self.label_fanuc_list.setText(_translate("MainWindow", "Программы Fanuc"))
+        self.rename_mazatrol_button.setText(_translate("MainWindow", "Переименовать файлы Mazatrol"))
+        self.label_mazatrol_list.setText(_translate("MainWindow", "Программы Mazatrol"))
+        self.label_info_window.setText(_translate("MainWindow", "<html><head/><body><p>Информация:</p></body></html>"))
+        self.label_path.setText(_translate("MainWindow", "Путь:"))
+        self.scaner_path_dialog_button.setText(_translate("MainWindow", "Обзор..."))
+        self.scaner_button.setText(_translate("MainWindow", "Сканировать"))
+        self.label_superzalupa.setText(_translate("MainWindow", "<html><head/><body><p align=\"center\"><span style=\" font-size:28pt; font-style:italic;\">-=SUPERZALUPA 2=-</span></p></body></html>"))
+        self.menu.setTitle(_translate("MainWindow", "Меню"))
+        self.action.setText(_translate("MainWindow", "Настройки"))
+        self.action_3.setText(_translate("MainWindow", "Справка"))
+        self.action_5.setText(_translate("MainWindow", "Выход"))
