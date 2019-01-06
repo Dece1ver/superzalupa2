@@ -10,7 +10,7 @@ import sys
 import os
 import logging
 
-logging.basicConfig(level=logging.DEBUG,
+logging.basicConfig(level=logging.INFO,
                     format='%(levelname)s : %(thread)d : %(threadName)s : %(asctime)s : %(message)s')
 
 
@@ -37,6 +37,9 @@ class MyInterface(QtWidgets.QMainWindow):
         self.ui.statusbar.showMessage('Кнопки переименовывателей станут активны после сканирования.')
         self.fast_scan_check = False
         self.scaner_thread = ScanerThread()
+        self.scaner_thread.started.connect(self.on_start)
+        self.scaner_thread.scaner_signal.connect(self.add_file)
+        self.scaner_thread.finished.connect(self.finish_scan)
 
     def show_help(self):
         help_window = QtWidgets.QMessageBox(4, 'Справка', 'Что-то будет когда-нибудь')
@@ -164,21 +167,28 @@ class MyInterface(QtWidgets.QMainWindow):
             self.error_files.append(self.full_path_to_file)
 
     def scaner(self):
+
+        logging.info('Start scan.')
+
         self.mazatrol_files = []
         self.fanuc_files = []
         self.error_files = []
         self.mazatrol_labels = []
         self.fanuc_labels = []
 
+        logging.info(f'\nself.mazatrol_files = {self.mazatrol_files}\nlen(self.mazatrol_files) = {len(self.mazatrol_files)}')
+        logging.info(f'\nself.fanuc_files = {self.fanuc_files}\nlen(self.mazatrol_files) = {len(self.fanuc_files)}')
+
+        logging.info(f'\nself.mazatrol_labels = {self.mazatrol_labels}\nlen(self.mazatrol_labels) = {len(self.mazatrol_labels)}')
+        logging.info(f'\nself.fanuc_labels = {self.fanuc_labels}\nlen(self.fanuc_labels) = {len(self.fanuc_labels)}')
+
         self.ui.mazatrol_list_widget.clear()
         self.ui.fanuc_list_widget.clear()
         self.ui.info_window.clear()
+        
         self.ui.info_window.insertPlainText(f'Сканирование директории "{self.ui.cwd}"...\n')
         self.ui.progressBar.setRange(0, 0)
         self.ui.progressBar.setValue(-1)
-        self.scaner_thread.started.connect(self.on_start)
-        self.scaner_thread.scaner_signal.connect(self.add_file)
-        self.scaner_thread.finished.connect(self.finish_scan)
         self.scaner_thread.start()
 
     def scaner_button_handler(self):
@@ -245,6 +255,13 @@ class MyInterface(QtWidgets.QMainWindow):
 
         if self.mazatrol_files == 0 and self.fanuc_files == 0:
             self.ui.statusbar.showMessage('Нечего переименовывать.')
+
+        logging.info('Finish scan.')
+        logging.info(f'\nself.mazatrol_files = {self.mazatrol_files}\nlen(self.mazatrol_files) = {len(self.mazatrol_files)}')
+        logging.info(f'\nself.fanuc_files = {self.fanuc_files}\nlen(self.mazatrol_files) = {len(self.fanuc_files)}')
+
+        logging.info(f'\nself.mazatrol_labels = {self.mazatrol_labels}\nlen(self.mazatrol_labels) = {len(self.mazatrol_labels)}')
+        logging.info(f'\nself.fanuc_labels = {self.fanuc_labels}\nlen(self.fanuc_labels) = {len(self.fanuc_labels)}')
 
         self.ui.progressBar.setRange(0, 100)
         self.ui.progressBar.setValue(0)
