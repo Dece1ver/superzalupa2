@@ -199,9 +199,9 @@ class MyInterface(QtWidgets.QMainWindow):
             self.scaner()
 
     def on_start(self):
-        pass
         self.ui.scaner_button.setText('Остановить')
-        # self.ui.scaner_button.setDisabled(True)
+        self.ui.label_mazatrol_list.setEnabled(False)
+        self.ui.label_fanuc_list.setEnabled(False)
 
     def stop_scaner(self):
         self.scaner_thread.running = False
@@ -231,6 +231,7 @@ class MyInterface(QtWidgets.QMainWindow):
         if len(self.mazatrol_files) != 0:
             if self.fast_scan_check:
                 self.ui.mazatrol_list_widget.addItems(self.mazatrol_labels)
+            self.ui.label_mazatrol_list.setEnabled(True)
             self.ui.rename_mazatrol_button.setEnabled(True)
             self.ui.statusbar.showMessage('Можно переименовывать.')
             self.ui.info_window.insertPlainText(f'Файлов Mazatrol: {len(self.mazatrol_files)}\n')
@@ -242,6 +243,7 @@ class MyInterface(QtWidgets.QMainWindow):
         if len(self.fanuc_files) != 0:
             if self.fast_scan_check:
                 self.ui.fanuc_list_widget.addItems(self.fanuc_labels)
+            self.ui.label_fanuc_list.setEnabled(True)
             self.ui.rename_fanuc_button.setEnabled(True)
             if self.scaner_thread.status:
                 self.ui.statusbar.showMessage('Можно переименовывать.')
@@ -268,9 +270,6 @@ class MyInterface(QtWidgets.QMainWindow):
 
         self.ui.scaner_button.setText('Сканировать')
         self.scaner_thread.status = False
-
-        self.ui.label_mazatrol_list.setEnabled(True)
-        self.ui.label_fanuc_list.setEnabled(True)
 
         self.fanuc_view = True
         self.mazatrol_view = True
