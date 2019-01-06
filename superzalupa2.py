@@ -8,6 +8,10 @@ from constants import badfiles
 import time
 import sys
 import os
+import logging
+
+logging.basicConfig(level=logging.DEBUG,
+                    format='%(levelname)s : %(thread)d : %(threadName)s : %(asctime)s : %(message)s')
 
 
 class MyInterface(QtWidgets.QMainWindow):
@@ -39,7 +43,7 @@ class MyInterface(QtWidgets.QMainWindow):
         help_window.exec()
 
     def save_check_box_settings(self):
-        # print(self.check_box.isChecked())
+        logging.info(f'Fast scan checkbox status: {self.check_box.isChecked()}')
         self.fast_scan_check = self.check_box.isChecked()
 
     def show_settings(self):
@@ -107,6 +111,7 @@ class MyInterface(QtWidgets.QMainWindow):
         if new_path != '':
             self.ui.cwd = new_path
         self.ui.scaner_path.setText(self.ui.cwd)
+        logging.info(f'Set new path to: "{self.ui.cwd}"')
         self.ui.rename_mazatrol_button.setEnabled(False)
         self.ui.rename_fanuc_button.setEnabled(False)
 
@@ -177,7 +182,7 @@ class MyInterface(QtWidgets.QMainWindow):
         self.scaner_thread.start()
 
     def scaner_button_handler(self):
-        # print(self.scaner_thread.status)
+        logging.info(f'Scaner thread status is: "{self.scaner_thread.status}"')
         if self.scaner_thread.status:
             self.stop_scaner()
         else:
@@ -351,11 +356,14 @@ class ScanerThread(QThread, MyInterface):
     def run(self):
         self.running = True
         self.status = True
+        logging.info(f'Scaner thread is started')
         for dir_paths, dir_names, file_names in os.walk(application.ui.cwd):
             if not self.status:
+                logging.info(f'Highlevel terminating')
                 break
             for file in file_names:
                 if not self.running:
+                    logging.info(f'Lowlevel terminating')
                     self.status = False
                     break
                 full_path_to_file = os.path.join(dir_paths, file)
@@ -364,6 +372,7 @@ class ScanerThread(QThread, MyInterface):
                     programm_name = application.get_mazatrol_name(full_path_to_file)
                     file_label = f'{file: <8}:({programm_name})'
                     application.mazatrol_labels.append(file_label.replace('/', '\\'))
+                    logging.debug(f'File "{file_label}" appended to list')
                     self.scaner_signal.emit(full_path_to_file, file_label)
                 else:
                     if not full_path_to_file.upper().endswith(badfiles):
@@ -373,6 +382,7 @@ class ScanerThread(QThread, MyInterface):
                             programm_name = application.get_fanuc_name(full_path_to_file)
                             file_label = f'{file: <8}:({programm_name})'
                             application.fanuc_labels.append(file_label.replace('/', '\\'))
+                            logging.debug(f'File "{file_label}" appended to list')
                             self.scaner_signal.emit(full_path_to_file, file_label)
 
 
