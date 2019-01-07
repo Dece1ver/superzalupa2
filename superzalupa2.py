@@ -11,7 +11,7 @@ import os
 import logging
 
 logging.basicConfig(level=logging.INFO,
-                    format='%(levelname)s : %(thread)d : %(threadName)s : %(asctime)s : %(message)s')
+                    format='%(levelname)s : %(thread)d : %(threadName)s : %(asctime)s :\n%(message)s\n')
 
 
 class MyInterface(QtWidgets.QMainWindow):
@@ -36,10 +36,22 @@ class MyInterface(QtWidgets.QMainWindow):
         self.ui.progressBar.setStyle(QtWidgets.QStyleFactory.create('Fusion'))
         self.ui.statusbar.showMessage('Кнопки переименовывателей станут активны после сканирования.')
         self.fast_scan_check = False
+
+        # созданиие инстанса потока сканера и подключение сигналов
         self.scaner_thread = ScanerThread()
         self.scaner_thread.started.connect(self.on_start)
         self.scaner_thread.scaner_signal.connect(self.add_file)
         self.scaner_thread.finished.connect(self.finish_scan)
+
+        # создание инстанса потока мазаковского переименовывателя с сигналами
+        self.rename_mazatrol_thread = MazatrolRenamer()
+        self.rename_mazatrol_thread.mazatrol_signal.connect(self.add_mazatrol_file, QtCore.Qt.QueuedConnection)
+        self.rename_mazatrol_thread.finished.connect(self.finish_rename_mazatrol)
+
+        # создание инстанса потока фанусковского переименовывателя с сигналами
+        self.rename_fanuc_thread = FanucRenamer()
+        self.rename_fanuc_thread.fanuc_signal.connect(self.add_fanuc_file, QtCore.Qt.QueuedConnection)
+        self.rename_fanuc_thread.finished.connect(self.finish_rename_fanuc)
 
     def show_help(self):
         help_window = QtWidgets.QMessageBox(4, 'Справка', 'Что-то будет когда-нибудь')
@@ -49,6 +61,7 @@ class MyInterface(QtWidgets.QMainWindow):
         logging.info(f'Fast scan checkbox status: {self.check_box.isChecked()}')
         self.fast_scan_check = self.check_box.isChecked()
 
+    # окно с настройками (через жопу, надо наверно переделать, но хз как)
     def show_settings(self):
         settings = QtWidgets.QWidget(self, Qt.Window)
         settings.setWindowModality(QtCore.Qt.WindowModal)
@@ -120,16 +133,13 @@ class MyInterface(QtWidgets.QMainWindow):
 
     # получает название детали из мазаковской программы
     def get_mazatrol_name(self, full_path_to_file):
-        try:
-            with open(full_path_to_file, 'rb') as file:
-                file.seek(80)
-                file_name = file.read(32).rstrip(b'\x00').decode()
-                file_name = file_name.replace('\\', '-').replace('*', '-').replace('/', '-').strip(' ')
-                return file_name
-        except ZeroDivisionError:
-            return f'Не удалось получить имя файла: {self.full_path_to_file}'
-            self.error_files.append(self.full_path_to_file)
+        with open(full_path_to_file, 'rb') as file:
+            file.seek(80)
+            file_name = file.read(32).rstrip(b'\x00').decode()
+            file_name = file_name.replace('\\', '-').replace('*', '-').replace('/', '-').strip(' ')
+            return file_name
 
+    # проверяет является ли файл фануковской пограммой (наличием % или O вначале)
     def check_fanuc_programm(self, full_path_to_file):
         try:
             with open(full_path_to_file, 'r') as f:
@@ -168,24 +178,23 @@ class MyInterface(QtWidgets.QMainWindow):
 
     def scaner(self):
 
-        logging.info('Start scan.')
-
         self.mazatrol_files = []
         self.fanuc_files = []
-        self.error_files = []
         self.mazatrol_labels = []
         self.fanuc_labels = []
 
-        logging.info(f'\nself.mazatrol_files = {self.mazatrol_files}\nlen(self.mazatrol_files) = {len(self.mazatrol_files)}')
-        logging.info(f'\nself.fanuc_files = {self.fanuc_files}\nlen(self.mazatrol_files) = {len(self.fanuc_files)}')
-
-        logging.info(f'\nself.mazatrol_labels = {self.mazatrol_labels}\nlen(self.mazatrol_labels) = {len(self.mazatrol_labels)}')
-        logging.info(f'\nself.fanuc_labels = {self.fanuc_labels}\nlen(self.fanuc_labels) = {len(self.fanuc_labels)}')
+        # логи до сканирования
+        logging.info('Scaner started.')
+        logging.info(f'''Lists len:
+            len(self.mazatrol_files) = {len(self.mazatrol_files)}
+            len(self.mazatrol_files) = {len(self.fanuc_files)}
+            len(self.mazatrol_labels) = {len(self.mazatrol_labels)}
+            len(self.fanuc_labels) = {len(self.fanuc_labels)}''')
 
         self.ui.mazatrol_list_widget.clear()
         self.ui.fanuc_list_widget.clear()
         self.ui.info_window.clear()
-        
+
         self.ui.info_window.insertPlainText(f'Сканирование директории "{self.ui.cwd}"...\n')
         self.ui.progressBar.setRange(0, 0)
         self.ui.progressBar.setValue(-1)
@@ -258,12 +267,13 @@ class MyInterface(QtWidgets.QMainWindow):
         if self.mazatrol_files == 0 and self.fanuc_files == 0:
             self.ui.statusbar.showMessage('Нечего переименовывать.')
 
-        logging.info('Finish scan.')
-        logging.info(f'\nself.mazatrol_files = {self.mazatrol_files}\nlen(self.mazatrol_files) = {len(self.mazatrol_files)}')
-        logging.info(f'\nself.fanuc_files = {self.fanuc_files}\nlen(self.mazatrol_files) = {len(self.fanuc_files)}')
-
-        logging.info(f'\nself.mazatrol_labels = {self.mazatrol_labels}\nlen(self.mazatrol_labels) = {len(self.mazatrol_labels)}')
-        logging.info(f'\nself.fanuc_labels = {self.fanuc_labels}\nlen(self.fanuc_labels) = {len(self.fanuc_labels)}')
+        # логи после сканирования
+        logging.info('Scaner finished.')
+        logging.info(f'''Lists len:
+            len(self.mazatrol_files) = {len(self.mazatrol_files)}
+            len(self.mazatrol_files) = {len(self.fanuc_files)}
+            len(self.mazatrol_labels) = {len(self.mazatrol_labels)}
+            len(self.fanuc_labels) = {len(self.fanuc_labels)}''')
 
         self.ui.progressBar.setRange(0, 100)
         self.ui.progressBar.setValue(0)
@@ -294,47 +304,53 @@ class MyInterface(QtWidgets.QMainWindow):
             self.ui.mazatrol_list_widget.addItems(self.mazatrol_files)
             self.mazatrol_view = False
 
+    # переименовыватель мазаковских программ
     def rename_mazatrol(self, mazatrol_files):
         self.ui.info_window.clear()
+        self.error_files = []
         self.ui.progressBar.setRange(0, len(self.mazatrol_files))
         self.ui.progressBar.setValue(0)
         self.progress_bar_steps = 0
         self.count = 0
-        self.rename_mazatrol_thread = MazatrolRenamer()
-        self.rename_mazatrol_thread.mazatrol_signal.connect(self.add_mazatrol_file, QtCore.Qt.QueuedConnection)
-        self.rename_mazatrol_thread.finished.connect(self.finish_rename_mazatrol)
         self.rename_mazatrol_thread.start()
 
     def add_mazatrol_file(self, file_name, new_file_name):
         if file_name == new_file_name:
             self.ui.info_window.insertPlainText(f'Программа "{file_name}" уже называется как надо, пропуск.\n')
+            self.error_files.append(f'{file_name} уже называется как надо.')
         else:
             self.ui.info_window.insertPlainText(f'{file_name} переименован в {new_file_name}\n')
             self.count += 1
-        self.ui.progressBar.setValue(self.progress_bar_steps)
         self.progress_bar_steps += 1
+        self.ui.progressBar.setValue(self.progress_bar_steps)
         self.ui.info_window.ensureCursorVisible()
 
     def finish_rename_mazatrol(self):
-        self.ui.info_window.insertPlainText(f'Переименовано {self.count} из {len(self.mazatrol_files)} файлов.\n')
+        self.ui.info_window.insertPlainText(f'\nПереименовано {self.count} из {len(self.mazatrol_files)} файлов.')
+        self.ui.info_window.ensureCursorVisible()
+        self.ui.info_window.insertPlainText(f'\n\nОшибок {len(self.error_files)}:\n')
+        self.ui.info_window.insertPlainText('\n'.join(self.error_files))
         self.ui.rename_mazatrol_button.setEnabled(False)
         self.ui.statusbar.showMessage('Переименовывание завершено.')
+
+        logging.info(f'Renamed {self.count} from {len(self.mazatrol_files)}. Errors: {len(self.error_files)}')
+
         self.open_cwd_dialog()
 
+    # переименовыватель фануковских программ
     def rename_fanuc(self, fanuc_files):
         self.ui.info_window.clear()
+        self.error_files = []
         self.ui.progressBar.setRange(0, len(self.fanuc_files))
         self.ui.progressBar.setValue(0)
         self.progress_bar_steps = 0
         self.count = 0
-        self.rename_fanuc_thread = FanucRenamer()
-        self.rename_fanuc_thread.fanuc_signal.connect(self.add_fanuc_file, QtCore.Qt.QueuedConnection)
-        self.rename_fanuc_thread.finished.connect(self.finish_rename_fanuc)
         self.rename_fanuc_thread.start()
 
     def add_fanuc_file(self, file_name, new_file_name):
         if file_name == new_file_name:
             self.ui.info_window.insertPlainText(f'Программа "{file_name}" уже называется как надо, пропуск.\n')
+            self.error_files.append(f'{file_name} уже называется как надо.')
         else:
             self.ui.info_window.insertPlainText(f'{file_name} переименован в {new_file_name}\n')
             self.count += 1
@@ -343,9 +359,15 @@ class MyInterface(QtWidgets.QMainWindow):
         self.ui.info_window.ensureCursorVisible()
 
     def finish_rename_fanuc(self):
-        self.ui.info_window.insertPlainText(f'Переименовано {self.count} из {len(self.fanuc_files)} файлов.\n')
+        self.ui.info_window.insertPlainText(f'\nПереименовано {self.count} из {len(self.fanuc_files)} файлов.')
+        self.ui.info_window.ensureCursorVisible()
+        self.ui.info_window.insertPlainText(f'\n\nОшибок {len(self.error_files)}:\n')
+        self.ui.info_window.insertPlainText('\n'.join(self.error_files))
         self.ui.rename_fanuc_button.setEnabled(False)
         self.ui.statusbar.showMessage('Переименовывание завершено.')
+
+        logging.info(f'Renamed {self.count} from {len(self.fanuc_files)}. Errors: {len(self.error_files)}')
+
         self.open_cwd_dialog()
 
     def open_cwd_dialog(self):
@@ -355,6 +377,7 @@ class MyInterface(QtWidgets.QMainWindow):
         result = message_box.exec()
         if result == 0:
             os.startfile(self.ui.cwd)
+            logging.info('Open CWD')
 
 
 class ScanerThread(QThread, MyInterface):
@@ -426,6 +449,7 @@ class MazatrolRenamer(QThread, MyInterface):
                 current_time = datetime.time(datetime.now()).strftime("%M-%S-%f")
                 new_file_path += f'(копия {current_time}).PBG'
             os.rename(path_to_file, new_file_path)
+            logging.debug(f'{file_name} renamed: {new_file_name}')
             self.mazatrol_signal.emit(file_name, new_file_name)
 
 
@@ -452,6 +476,7 @@ class FanucRenamer(QThread, MyInterface):
                 current_time = datetime.time(datetime.now()).strftime("%M-%S-%f")
                 new_file_path += f'(копия {current_time})'
             os.rename(path_to_file, new_file_path)
+            logging.debug(f'{file_name} renamed: {new_file_name}')
             self.fanuc_signal.emit(file_name, new_file_name)
 
 
@@ -462,4 +487,4 @@ if __name__ == '__main__':
     application = MyInterface()
     application.show()
     # splash.finish(application)
-    sys.exit(app.exec())
+sys.exit(app.exec())
