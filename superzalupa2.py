@@ -158,8 +158,8 @@ class MyInterface(QtWidgets.QMainWindow):
         try:
             with open(full_path_to_file, 'rb') as f:
                 f.seek(2)
-                file_name = f.read(55)
-                if b')' not in file_name:
+                file_name = f.read(20)
+                if b'(' not in file_name:
                     try:
                         file_name.decode()
                         file_name = 'Название отсутствует!'
@@ -318,6 +318,9 @@ class MyInterface(QtWidgets.QMainWindow):
         if file_name == new_file_name:
             self.ui.info_window.insertPlainText(f'Программа "{file_name}" уже называется как надо, пропуск.\n')
             self.error_files.append(f'{file_name} уже называется как надо.')
+        elif new_file_name == 'Название отсутствует!':
+            self.ui.info_window.insertPlainText(f'Программа "{file_name}" не имеет названия внутри, пропуск.\n')
+            self.error_files.append(f'{file_name} не имеет названия внутри.')
         else:
             self.ui.info_window.insertPlainText(f'{file_name} переименован в {new_file_name}\n')
             self.count += 1
@@ -351,6 +354,9 @@ class MyInterface(QtWidgets.QMainWindow):
         if file_name == new_file_name:
             self.ui.info_window.insertPlainText(f'Программа "{file_name}" уже называется как надо, пропуск.\n')
             self.error_files.append(f'{file_name} уже называется как надо.')
+        elif new_file_name == 'Название отсутствует!':
+            self.ui.info_window.insertPlainText(f'Программа "{file_name}" не имеет названия внутри, пропуск.\n')
+            self.error_files.append(f'{file_name} не имеет названия внутри.')
         else:
             self.ui.info_window.insertPlainText(f'{file_name} переименован в {new_file_name}\n')
             self.count += 1
@@ -439,7 +445,7 @@ class MazatrolRenamer(QThread, MyInterface):
         for path_to_file in application.mazatrol_files:
             file_dir, file_name = os.path.split(path_to_file)
             new_file_name = application.get_mazatrol_name(path_to_file) + '.PBG'
-            if file_name == new_file_name:
+            if new_file_name in (file_name, 'Название отсутствует!'):
                 self.mazatrol_signal.emit(file_name, new_file_name)
                 continue
             new_file_path = os.path.join(file_dir, new_file_name)
@@ -467,7 +473,7 @@ class FanucRenamer(QThread, MyInterface):
         for path_to_file in application.fanuc_files:
             file_dir, file_name = os.path.split(path_to_file)
             new_file_name = application.get_fanuc_name(path_to_file)
-            if file_name == new_file_name:
+            if new_file_name in (file_name, 'Название отсутствует!'):
                 self.fanuc_signal.emit(file_name, new_file_name)
                 continue
             new_file_path = os.path.join(file_dir, new_file_name)
