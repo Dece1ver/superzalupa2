@@ -158,8 +158,8 @@ class MyInterface(QtWidgets.QMainWindow):
         try:
             with open(full_path_to_file, 'rb') as f:
                 f.seek(2)
-                file_name = f.read(20)
-                if b'(' not in file_name:
+                file_name = f.read(40)
+                if b')' not in file_name:
                     try:
                         file_name.decode()
                         file_name = 'Название отсутствует!'
@@ -488,9 +488,9 @@ class FanucRenamer(QThread, MyInterface):
 
 if __name__ == '__main__':
     app = QtWidgets.QApplication([])
-    # splash = QtWidgets.QSplashScreen(QtGui.QPixmap('img.png'))
-    # splash.show()
+    splash = QtWidgets.QSplashScreen(QtGui.QPixmap('img.png'))
+    splash.show()
     application = MyInterface()
     application.show()
-    # splash.finish(application)
+    splash.finish(application)
 sys.exit(app.exec())
