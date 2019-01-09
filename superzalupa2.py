@@ -196,8 +196,8 @@ class MyInterface(QtWidgets.QMainWindow):
         try:
             with open(full_path_to_file, 'rb') as f:
                 f.seek(2)
-                file_name = f.read(20)
-                if b'(' not in file_name:
+                file_name = f.read(55)
+                if b')' not in file_name:
                     try:
                         file_name.decode()
                         file_name = 'Название отсутствует!'
