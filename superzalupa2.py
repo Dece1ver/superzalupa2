@@ -129,7 +129,7 @@ class MyInterface(QtWidgets.QMainWindow):
         self.check_box.setChecked(self.fast_scan_check)
         self.check_box.clicked.connect(self.save_check_box_settings)
         label_2 = QtWidgets.QLabel(settings)
-        label_2.setText('При сканировании отключает моментальное добавление элементов в списки интерфейса. Рекомендуется использовать когда предполагаемое количество управляющих программ больше тысячи.')
+        label_2.setText('При сканировании отключает моментальное добавление элементов в списки интерфейса. Рекомендуется использовать, когда предполагаемое количество управляющих программ больше тысячи.')
         label_2.setGeometry(QtCore.QRect(10, 50, 381, 41))
         label_2.setWordWrap(True)
         label_2.setIndent(0)
