@@ -5,6 +5,7 @@ from PyQt5.QtCore import QThread, pyqtSignal, Qt
 from design import Ui_MainWindow  # импорт сгенерированного файла дизайна
 from datetime import datetime
 from constants import badfiles
+import norm
 import time
 import sys
 import os
@@ -29,6 +30,7 @@ class MyInterface(QtWidgets.QMainWindow):
         self.ui.rename_fanuc_button.setEnabled(False)
         self.ui.scaner_path_dialog_button.clicked.connect(self.get_path)
         self.ui.action.triggered.connect(self.show_settings)
+        self.ui.action_2.triggered.connect(self.show_norm)
         self.ui.action_3.triggered.connect(self.show_help)
         self.ui.action_5.triggered.connect(self.close)
         self.ui.label_fanuc_list.clicked.connect(self.change_fanuc_view)
@@ -53,6 +55,42 @@ class MyInterface(QtWidgets.QMainWindow):
         self.rename_fanuc_thread.fanuc_signal.connect(self.add_fanuc_file, QtCore.Qt.QueuedConnection)
         self.rename_fanuc_thread.finished.connect(self.finish_rename_fanuc)
 
+    def show_norm(self):
+        norm_label = 'Нормы для SKT/WIA:'
+        norm_window = QtWidgets.QWidget(self, Qt.Window)
+        norm_window.setWindowModality(QtCore.Qt.WindowModal)
+        norm_window.resize(700, 500)
+        norm_window.setWindowTitle('Нормы')
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(norm_window.sizePolicy().hasHeightForWidth())
+        norm_window.setSizePolicy(sizePolicy)
+        icon = QtGui.QIcon()
+        icon.addPixmap(QtGui.QPixmap("window.ico"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        norm_window.setWindowIcon(icon)
+        label = QtWidgets.QLabel(norm_window)
+        label.setText(norm_label)
+        label.setGeometry(QtCore.QRect(10, 0, 691, 31))
+        label.setObjectName("label")
+        line = QtWidgets.QFrame(norm_window)
+        line.setGeometry(QtCore.QRect(10, 20, 681, 16))
+        line.setFrameShape(QtWidgets.QFrame.HLine)
+        line.setFrameShadow(QtWidgets.QFrame.Sunken)
+        line.setObjectName("line")
+        norm_list = QtWidgets.QListWidget(norm_window)
+        norm_list.setEnabled(True)
+        norm_list.setGeometry(QtCore.QRect(1, 30, 698, 469))
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
+        sizePolicy.setHeightForWidth(norm_list.sizePolicy().hasHeightForWidth())
+        norm_list.setSizePolicy(sizePolicy)
+        font = QtGui.QFont()
+        font.setFamily("Consolas")
+        font.setPointSize(9)
+        norm_list.setFont(font)
+        norm_list.addItems(norm.get_details())
+        norm_window.show()
+
     def show_help(self):
         help_window = QtWidgets.QMessageBox(4, 'Справка', 'Что-то будет когда-нибудь')
         help_window.exec()
@@ -75,50 +113,50 @@ class MyInterface(QtWidgets.QMainWindow):
         icon = QtGui.QIcon()
         icon.addPixmap(QtGui.QPixmap("window.ico"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         settings.setWindowIcon(icon)
-        self.label = QtWidgets.QLabel(settings)
-        self.label.setText('Настройки:')
-        self.label.setGeometry(QtCore.QRect(10, 0, 391, 31))
-        self.label.setObjectName("label")
-        self.line = QtWidgets.QFrame(settings)
-        self.line.setGeometry(QtCore.QRect(10, 20, 381, 16))
-        self.line.setFrameShape(QtWidgets.QFrame.HLine)
-        self.line.setFrameShadow(QtWidgets.QFrame.Sunken)
-        self.line.setObjectName("line")
+        label = QtWidgets.QLabel(settings)
+        label.setText('Настройки:')
+        label.setGeometry(QtCore.QRect(10, 0, 391, 31))
+        label.setObjectName("label")
+        line = QtWidgets.QFrame(settings)
+        line.setGeometry(QtCore.QRect(10, 20, 381, 16))
+        line.setFrameShape(QtWidgets.QFrame.HLine)
+        line.setFrameShadow(QtWidgets.QFrame.Sunken)
+        line.setObjectName("line")
         self.check_box = QtWidgets.QCheckBox(settings)
         self.check_box.setText('Быстрое сканирование')
         self.check_box.setGeometry(QtCore.QRect(10, 30, 191, 17))
         self.check_box.setObjectName("check_box")
         self.check_box.setChecked(self.fast_scan_check)
         self.check_box.clicked.connect(self.save_check_box_settings)
-        self.label_2 = QtWidgets.QLabel(settings)
-        self.label_2.setText('При сканировании отключает моментальное добавление элементов в списки интерфейса. Рекомендуется использовать когда предполагаемое количество управляющих программ больше тысячи.')
-        self.label_2.setGeometry(QtCore.QRect(10, 50, 381, 41))
-        self.label_2.setWordWrap(True)
-        self.label_2.setIndent(0)
-        self.label_2.setObjectName("label_2")
-        self.line_2 = QtWidgets.QFrame(settings)
-        self.line_2.setGeometry(QtCore.QRect(10, 90, 381, 16))
-        self.line_2.setFrameShape(QtWidgets.QFrame.HLine)
-        self.line_2.setFrameShadow(QtWidgets.QFrame.Sunken)
-        self.line_2.setObjectName("line_2")
-        self.label_3 = QtWidgets.QLabel(settings)
-        self.label_3.setText('Расширения файлов исключенные для сканирования:')
-        self.label_3.setGeometry(QtCore.QRect(10, 100, 381, 16))
-        self.label_3.setObjectName("label_3")
-        self.pushButton = QtWidgets.QPushButton(settings)
-        self.pushButton.setText('Сохранить')
-        self.pushButton.setGeometry(QtCore.QRect(300, 270, 91, 23))
-        self.pushButton.setObjectName("pushButton")
-        self.pushButton.clicked.connect(settings.close)
-        self.textBrowser = QtWidgets.QTextBrowser(settings)
-        self.textBrowser.setGeometry(QtCore.QRect(10, 120, 381, 141))
-        self.textBrowser.setStyleSheet("font: 12pt \"Consolas\";")
-        self.textBrowser.setObjectName("textBrowser")
-        self.textBrowser.setHtml("<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
-                                 "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
-                                 "p, li { white-space: pre-wrap; }\n"
-                                 "</style></head><body style=\" font-family:\'Consolas\'; font-size:12pt; font-weight:400; font-style:normal;\">\n"
-                                 "<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:\'MS Shell Dlg 2\'; font-size:8.25pt;\"><br /></p></body></html>")
+        label_2 = QtWidgets.QLabel(settings)
+        label_2.setText('При сканировании отключает моментальное добавление элементов в списки интерфейса. Рекомендуется использовать когда предполагаемое количество управляющих программ больше тысячи.')
+        label_2.setGeometry(QtCore.QRect(10, 50, 381, 41))
+        label_2.setWordWrap(True)
+        label_2.setIndent(0)
+        label_2.setObjectName("label_2")
+        line_2 = QtWidgets.QFrame(settings)
+        line_2.setGeometry(QtCore.QRect(10, 90, 381, 16))
+        line_2.setFrameShape(QtWidgets.QFrame.HLine)
+        line_2.setFrameShadow(QtWidgets.QFrame.Sunken)
+        line_2.setObjectName("line_2")
+        label_3 = QtWidgets.QLabel(settings)
+        label_3.setText('Расширения файлов исключенные для сканирования:')
+        label_3.setGeometry(QtCore.QRect(10, 100, 381, 16))
+        label_3.setObjectName("label_3")
+        pushButton = QtWidgets.QPushButton(settings)
+        pushButton.setText('Сохранить')
+        pushButton.setGeometry(QtCore.QRect(300, 270, 91, 23))
+        pushButton.setObjectName("pushButton")
+        pushButton.clicked.connect(settings.close)
+        textBrowser = QtWidgets.QTextBrowser(settings)
+        textBrowser.setGeometry(QtCore.QRect(10, 120, 381, 141))
+        textBrowser.setStyleSheet("font: 12pt \"Consolas\";")
+        textBrowser.setObjectName("textBrowser")
+        textBrowser.setHtml("<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+                            "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
+                            "p, li { white-space: pre-wrap; }\n"
+                            "</style></head><body style=\" font-family:\'Consolas\'; font-size:12pt; font-weight:400; font-style:normal;\">\n"
+                            "<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:\'MS Shell Dlg 2\'; font-size:8.25pt;\"><br /></p></body></html>")
         settings.show()
 
     # получает путь с кнопки
@@ -158,13 +196,14 @@ class MyInterface(QtWidgets.QMainWindow):
         try:
             with open(full_path_to_file, 'rb') as f:
                 f.seek(2)
-                file_name = f.read(40)
-                if b')' not in file_name:
+                file_name = f.read(20)
+                if b'(' not in file_name:
                     try:
                         file_name.decode()
                         file_name = 'Название отсутствует!'
                     except UnicodeDecodeError:
                         file_name = 'Скорее всего это не программа Fanuc!'
+
                 else:
                     file_name = file_name.split(b'(')
                     file_name = file_name[1].split(b')')
@@ -488,9 +527,9 @@ class FanucRenamer(QThread, MyInterface):
 
 if __name__ == '__main__':
     app = QtWidgets.QApplication([])
-    splash = QtWidgets.QSplashScreen(QtGui.QPixmap('img.png'))
-    splash.show()
+    # splash = QtWidgets.QSplashScreen(QtGui.QPixmap('img.png'))
+    # splash.show()
     application = MyInterface()
     application.show()
-    splash.finish(application)
+    # splash.finish(application)
 sys.exit(app.exec())

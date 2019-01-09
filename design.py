@@ -8,7 +8,6 @@
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 
-
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
@@ -378,6 +377,8 @@ class Ui_MainWindow(object):
         self.menubar.setObjectName("menubar")
         self.menu = QtWidgets.QMenu(self.menubar)
         self.menu.setObjectName("menu")
+        self.menu_2 = QtWidgets.QMenu(self.menubar)
+        self.menu_2.setObjectName("menu_2")
         MainWindow.setMenuBar(self.menubar)
         self.statusbar = QtWidgets.QStatusBar(MainWindow)
         self.statusbar.setObjectName("statusbar")
@@ -388,12 +389,20 @@ class Ui_MainWindow(object):
         self.action_3.setObjectName("action_3")
         self.action_5 = QtWidgets.QAction(MainWindow)
         self.action_5.setObjectName("action_5")
+        self.action_2 = QtWidgets.QAction(MainWindow)
+        self.action_2.setObjectName("action_2")
+        self.action_4 = QtWidgets.QAction(MainWindow)
+        self.action_4.setObjectName("action_4")
         self.menu.addAction(self.action)
         self.menu.addSeparator()
         self.menu.addAction(self.action_3)
         self.menu.addSeparator()
         self.menu.addAction(self.action_5)
+        self.menu_2.addAction(self.action_2)
+        self.menu_2.addSeparator()
+        self.menu_2.addAction(self.action_4)
         self.menubar.addAction(self.menu.menuAction())
+        self.menubar.addAction(self.menu_2.menuAction())
 
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
@@ -411,6 +420,10 @@ class Ui_MainWindow(object):
         self.scaner_button.setText(_translate("MainWindow", "Сканировать"))
         self.label_superzalupa.setText(_translate("MainWindow", "<html><head/><body><p align=\"center\"><span style=\" font-size:28pt; font-style:italic;\">-=SUPERZALUPA 2=-</span></p></body></html>"))
         self.menu.setTitle(_translate("MainWindow", "Меню"))
+        self.menu_2.setTitle(_translate("MainWindow", "Нормы"))
         self.action.setText(_translate("MainWindow", "Настройки"))
         self.action_3.setText(_translate("MainWindow", "Справка"))
         self.action_5.setText(_translate("MainWindow", "Выход"))
+        self.action_2.setText(_translate("MainWindow", "Нормы SKT/WIA"))
+        self.action_4.setText(_translate("MainWindow", "Неотнормированное машинное время"))
+
