@@ -219,8 +219,8 @@ class MyInterface(QtWidgets.QMainWindow):
     def check_fanuc_programm(self, full_path_to_file):
         try:
             with open(full_path_to_file, 'r') as f:
-                first_symbol = f.read(1)
-                if first_symbol in ('%', 'O'):
+                first_symbols = f.read(2)
+                if first_symbols in ('%\n', 'O0'):
                     return True
                 else:
                     return False
