@@ -425,5 +425,5 @@ class Ui_MainWindow(object):
         self.action_3.setText(_translate("MainWindow", "Справка"))
         self.action_5.setText(_translate("MainWindow", "Выход"))
         self.action_2.setText(_translate("MainWindow", "Нормы SKT/WIA"))
-        self.action_4.setText(_translate("MainWindow", "Неотнормированное машинное время"))
+        self.action_4.setText(_translate("MainWindow", "Нормы Mazak 200ML"))
 
