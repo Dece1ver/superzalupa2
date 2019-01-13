@@ -33,7 +33,7 @@ def get_wia_details(details=[]):
         setup_time = if_int(setup_time)
         setup_time = if_empty(setup_time)
 
-        detail = f'{detail:.<50} наладка: {setup_time: <3} машинное время: {machine_time: <3} замена: {replace_time: <3}'
+        detail = f'{detail:.<49} наладка: {setup_time: <3} машинное время: {machine_time: <3} замена: {replace_time: <3}'
 
         details.append(detail)
         # print(detail)
@@ -56,12 +56,13 @@ def get_200_details(details=[]):
         setup_time = if_int(setup_time)
         setup_time = if_empty(setup_time)
 
-        detail = f'{detail:.<50} наладка: {setup_time: <3} машинное время: {machine_time: <3} замена: {replace_time: <3}'
+        detail = f'{detail:.<49} наладка: {setup_time: <3} машинное время: {machine_time: <3} замена: {replace_time: <3}'
 
         details.append(detail)
         # print(detail)
     return details
 
 
-if __name__ == '__main__':
-    get_details()
+# if __name__ == '__main__':
+#     get_wia_details()
+#     get_200_details()
