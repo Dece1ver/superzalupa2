@@ -244,10 +244,6 @@ class MyInterface(QtWidgets.QMainWindow):
         self.textBrowser.setStyleSheet("font: 10pt \"Consolas\";")
         self.textBrowser.setObjectName("textBrowser")
         self.textBrowser.insertPlainText(badfiles_string)
-        if self.scaner_thread.status:
-            self.check_box.setEnabled(False)
-            self.textBrowser.setEnabled(False)
-            pushButton.setEnabled(False)
         self.settings.show()
 
     # получает путь с кнопки
@@ -341,6 +337,9 @@ class MyInterface(QtWidgets.QMainWindow):
         self.ui.scaner_button.setText('Остановить')
         self.ui.label_mazatrol_list.setEnabled(False)
         self.ui.label_fanuc_list.setEnabled(False)
+        self.ui.scaner_path_dialog_button.setEnabled(False)
+        self.ui.action.setEnabled(False)
+        self.ui.statusbar.showMessage('Сканировние.')
 
     def stop_scaner(self):
         self.scaner_thread.running = False
@@ -364,8 +363,8 @@ class MyInterface(QtWidgets.QMainWindow):
                 item.setText(file_label)
                 self.ui.fanuc_list_widget.setCurrentItem(item)
                 self.ui.label_fanuc_list.setText(f'Файлов Fanuc: {len(self.fanuc_files)}')
-
-        self.ui.statusbar.showMessage('Сканировние.')
+        if len(self.fanuc_files) > 500 or len(self.mazatrol_files) > 500:
+            self.ui.statusbar.showMessage('Сканировние. Если интерфейс сильно зависает, можно включить в настройках быстрое сканирование (после остановки).')
 
     def finish_scan(self):
 
@@ -398,6 +397,8 @@ class MyInterface(QtWidgets.QMainWindow):
 
         if self.mazatrol_files == 0 and self.fanuc_files == 0:
             self.ui.statusbar.showMessage('Нечего переименовывать.')
+        self.ui.scaner_path_dialog_button.setEnabled(True)
+        self.ui.action.setEnabled(True)
 
         # логи после сканирования
         logging.info('Scaner finished.')
