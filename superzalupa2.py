@@ -4,15 +4,54 @@ from PyQt5 import QtWidgets, QtCore, QtGui
 from PyQt5.QtCore import QThread, pyqtSignal, Qt
 from design import Ui_MainWindow  # импорт сгенерированного файла дизайна
 from datetime import datetime
-from constants import badfiles
 import norm
 import time
 import sys
 import os
 import logging
+import configparser
 
 logging.basicConfig(level=logging.INFO,
                     format='%(levelname)s : %(thread)d : %(threadName)s : %(asctime)s :\n%(message)s\n')
+if not os.path.isfile('settings.ini'):
+    logging.info('Settings file not found, creating a new one.')
+    config = configparser.ConfigParser()
+    config['SETTINGS'] = {'FastScanCheckboxState': 'False',
+                          'IgnoredFiles': '.PBG, PYC, .PY, .PYW, .KV, .UI, .MP3, .FLAC, .WAV, .OGG, .JPG, .JPEG, .BMP, .ICO, .TIFF, .JPE, .OXPS, .PSD, .PNG, .GIF, .MPEG, .MP4, .WEBM, .WMA, .FLV, .MOV, 3GP, .AVI, .VOB, .EXE, .RAR, .ZIP, .7Z, .MSI, .INSTALL, .APK, .XLS, .XLSX, .WPS, .FRW, .INI, .CFG, .DB, .DAT, .TMP, .DOC, .DOCX, .PDF, .DJVU, .FB2, .EPUB, .DB, .LNK, .URL, .HTML, .GP3, .GP4, .GP5, .GPX, .CDW, .FRW, .M3D, .KDW, .SPW, .A3D, .SYS, .HLP, .HTM, .HTML, .PPT, .COM'}
+
+    with open('settings.ini', 'w') as config_file:
+        config.write(config_file)
+settings_file = 'settings.ini'
+
+
+def get_badfiles(path):
+    config = configparser.ConfigParser()
+    config.read(settings_file)
+    badfiles_string = config['SETTINGS']['IgnoredFiles']
+    return badfiles_string
+
+
+def get_chexbox_status(path):
+    config = configparser.ConfigParser()
+    config.read(settings_file)
+    status = config['SETTINGS']['FastScanCheckboxState']
+    if status == 'True':
+        return True
+    else:
+        return False
+
+
+def set_badfiles(badfiles_string):
+    badfiles = badfiles_string.upper().replace(' ', '')
+    badfiles = badfiles.split(',')
+    while '' in badfiles:
+        badfiles.remove('')
+    badfiles = tuple(badfiles)
+    return badfiles
+
+
+badfiles = set_badfiles(get_badfiles(settings_file))
+logging.info(f'BadFiles: {badfiles}')
 
 
 class MyInterface(QtWidgets.QMainWindow):
@@ -38,7 +77,8 @@ class MyInterface(QtWidgets.QMainWindow):
         self.ui.label_mazatrol_list.clicked.connect(self.change_mazatrol_view)
         self.ui.progressBar.setStyle(QtWidgets.QStyleFactory.create('Fusion'))
         self.ui.statusbar.showMessage('Кнопки переименовывателей станут активны после сканирования.')
-        self.fast_scan_check = False
+        self.fast_scan_check = get_chexbox_status(settings_file)
+        logging.info(f'Readed status: {self.fast_scan_check}')
 
         # созданиие инстанса потока сканера и подключение сигналов
         self.scaner_thread = ScanerThread()
@@ -61,7 +101,8 @@ class MyInterface(QtWidgets.QMainWindow):
         norm_label = 'Нормы для SKT/WIA:'
         norm_window = QtWidgets.QWidget(self, Qt.Window)
         norm_window.setWindowModality(QtCore.Qt.WindowModal)
-        norm_window.resize(700, 500)
+        norm_window.setMinimumSize(700, 500)
+        norm_window.setMaximumSize(700, 500)
         norm_window.setWindowTitle('Нормы')
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
@@ -97,7 +138,8 @@ class MyInterface(QtWidgets.QMainWindow):
         norm_label = 'Нормы для Мазака 200ML:'
         norm_window = QtWidgets.QWidget(self, Qt.Window)
         norm_window.setWindowModality(QtCore.Qt.WindowModal)
-        norm_window.resize(700, 500)
+        norm_window.setMinimumSize(700, 500)
+        norm_window.setMaximumSize(700, 500)
         norm_window.setWindowTitle('Нормы')
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
@@ -133,71 +175,80 @@ class MyInterface(QtWidgets.QMainWindow):
         help_window = QtWidgets.QMessageBox(4, 'Справка', 'Что-то будет когда-нибудь')
         help_window.exec()
 
-    def save_check_box_settings(self):
-        logging.info(f'Fast scan checkbox status: {self.check_box.isChecked()}')
+    def save_settings(self):
+
+        logging.info(f'Fast scan checkbox status: {self.check_box.isChecked()}\nRead Ignored Files: {self.textBrowser.toPlainText()}')
+        config = configparser.ConfigParser()
+        config['SETTINGS'] = {'FastScanCheckboxState': str(self.check_box.isChecked()), 'IgnoredFiles': self.textBrowser.toPlainText().upper()}
+
+        with open(settings_file, 'w') as config_file:
+            config.write(config_file)
+
         self.fast_scan_check = self.check_box.isChecked()
+        badfiles = set_badfiles(get_badfiles(settings_file))
+        logging.info(f'BadFiles: {badfiles}')
+        self.settings.close()
 
     # окно с настройками (через жопу, надо наверно переделать, но хз как)
     def show_settings(self):
-        settings = QtWidgets.QWidget(self, Qt.Window)
-        settings.setWindowModality(QtCore.Qt.WindowModal)
-        settings.resize(400, 300)
-        settings.setWindowTitle('Настройки')
+        self.settings = QtWidgets.QWidget(self, Qt.Window)
+        self.settings.setWindowModality(QtCore.Qt.WindowModal)
+        self.settings.resize(400, 300)
+        self.settings.setWindowTitle('Настройки')
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(settings.sizePolicy().hasHeightForWidth())
-        settings.setSizePolicy(sizePolicy)
+        sizePolicy.setHeightForWidth(self.settings.sizePolicy().hasHeightForWidth())
+        self.settings.setSizePolicy(sizePolicy)
         icon = QtGui.QIcon()
         icon.addPixmap(QtGui.QPixmap("window.ico"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        settings.setWindowIcon(icon)
-        label = QtWidgets.QLabel(settings)
-        label.setText('Настройки:')
+        self.settings.setWindowIcon(icon)
+        label = QtWidgets.QLabel(self.settings)
+        label.setText('Выбор настроек:')
         label.setGeometry(QtCore.QRect(10, 0, 391, 31))
         label.setObjectName("label")
-        line = QtWidgets.QFrame(settings)
+        line = QtWidgets.QFrame(self.settings)
         line.setGeometry(QtCore.QRect(10, 20, 381, 16))
         line.setFrameShape(QtWidgets.QFrame.HLine)
         line.setFrameShadow(QtWidgets.QFrame.Sunken)
         line.setObjectName("line")
-        self.check_box = QtWidgets.QCheckBox(settings)
+        self.check_box = QtWidgets.QCheckBox(self.settings)
         self.check_box.setText('Быстрое сканирование')
         self.check_box.setGeometry(QtCore.QRect(10, 30, 191, 17))
         self.check_box.setObjectName("check_box")
+
         self.check_box.setChecked(self.fast_scan_check)
-        self.check_box.clicked.connect(self.save_check_box_settings)
-        if self.scaner_thread.status:
-            self.check_box.setEnabled(False)
-        label_2 = QtWidgets.QLabel(settings)
+        label_2 = QtWidgets.QLabel(self.settings)
         label_2.setText('При сканировании отключает моментальное добавление элементов в списки интерфейса. Рекомендуется использовать, когда предполагаемое количество управляющих программ больше тысячи.')
         label_2.setGeometry(QtCore.QRect(10, 50, 381, 41))
         label_2.setWordWrap(True)
         label_2.setIndent(0)
         label_2.setObjectName("label_2")
-        line_2 = QtWidgets.QFrame(settings)
+        line_2 = QtWidgets.QFrame(self.settings)
         line_2.setGeometry(QtCore.QRect(10, 90, 381, 16))
         line_2.setFrameShape(QtWidgets.QFrame.HLine)
         line_2.setFrameShadow(QtWidgets.QFrame.Sunken)
         line_2.setObjectName("line_2")
-        label_3 = QtWidgets.QLabel(settings)
+        label_3 = QtWidgets.QLabel(self.settings)
         label_3.setText('Расширения файлов, исключенные для сканирования:')
         label_3.setGeometry(QtCore.QRect(10, 100, 381, 16))
         label_3.setObjectName("label_3")
-        pushButton = QtWidgets.QPushButton(settings)
+        pushButton = QtWidgets.QPushButton(self.settings)
         pushButton.setText('Сохранить')
         pushButton.setGeometry(QtCore.QRect(300, 270, 91, 23))
         pushButton.setObjectName("pushButton")
-        pushButton.clicked.connect(settings.close)
-        textBrowser = QtWidgets.QTextBrowser(settings)
-        textBrowser.setGeometry(QtCore.QRect(10, 120, 381, 141))
-        textBrowser.setStyleSheet("font: 12pt \"Consolas\";")
-        textBrowser.setObjectName("textBrowser")
-        textBrowser.setHtml("<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
-                            "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
-                            "p, li { white-space: pre-wrap; }\n"
-                            "</style></head><body style=\" font-family:\'Consolas\'; font-size:12pt; font-weight:400; font-style:normal;\">\n"
-                            "<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:\'MS Shell Dlg 2\'; font-size:8.25pt;\"><br /></p></body></html>")
-        settings.show()
+        pushButton.clicked.connect(self.save_settings)
+        badfiles_string = get_badfiles(settings_file)
+        self.textBrowser = QtWidgets.QPlainTextEdit(self.settings)
+        self.textBrowser.setGeometry(QtCore.QRect(10, 120, 381, 141))
+        self.textBrowser.setStyleSheet("font: 10pt \"Consolas\";")
+        self.textBrowser.setObjectName("textBrowser")
+        self.textBrowser.insertPlainText(badfiles_string)
+        if self.scaner_thread.status:
+            self.check_box.setEnabled(False)
+            self.textBrowser.setEnabled(False)
+            pushButton.setEnabled(False)
+        self.settings.show()
 
     # получает путь с кнопки
     def get_path(self):
