@@ -255,8 +255,6 @@ class MyInterface(QtWidgets.QMainWindow):
             self.ui.cwd = new_path
         self.ui.scaner_path.setText(self.ui.cwd)
         logging.info(f'Set new path to: "{self.ui.cwd}"')
-        self.ui.rename_mazatrol_button.setEnabled(False)
-        self.ui.rename_fanuc_button.setEnabled(False)
 
     # получает название детали из мазаковской программы
     def get_mazatrol_name(self, full_path_to_file):
@@ -342,6 +340,8 @@ class MyInterface(QtWidgets.QMainWindow):
         self.ui.scaner_path_dialog_button.setEnabled(False)
         self.ui.action.setEnabled(False)
         self.ui.statusbar.showMessage('Сканировние.')
+        self.ui.rename_mazatrol_button.setEnabled(False)
+        self.ui.rename_fanuc_button.setEnabled(False)
 
     def stop_scaner(self):
         self.scaner_thread.running = False
@@ -365,8 +365,10 @@ class MyInterface(QtWidgets.QMainWindow):
                 item.setText(file_label)
                 self.ui.fanuc_list_widget.setCurrentItem(item)
                 self.ui.label_fanuc_list.setText(f'Файлов Fanuc: {len(self.fanuc_files)}')
-        if len(self.fanuc_files) > 500 or len(self.mazatrol_files) > 500:
+        if not self.fast_scan_check and (len(self.fanuc_files) > 500 or len(self.mazatrol_files) > 500):
             self.ui.statusbar.showMessage('Сканировние. Если интерфейс сильно зависает, можно включить в настройках быстрое сканирование (после остановки).')
+        elif self.fast_scan_check:
+            self.ui.statusbar.showMessage('Сканирование. Результаты будут отображены после завершения.')
 
     def finish_scan(self):
 
