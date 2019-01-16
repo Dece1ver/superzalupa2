@@ -623,9 +623,9 @@ class FanucRenamer(QThread, MyInterface):
 
 if __name__ == '__main__':
     app = QtWidgets.QApplication([])
-    # splash = QtWidgets.QSplashScreen(QtGui.QPixmap('img.png'))
-    # splash.show()
+    splash = QtWidgets.QSplashScreen(QtGui.QPixmap('img.png'))
+    splash.show()
     application = MyInterface()
     application.show()
-    # splash.finish(application)
+    splash.finish(application)
 sys.exit(app.exec())
