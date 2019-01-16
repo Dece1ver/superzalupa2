@@ -189,6 +189,7 @@ class MyInterface(QtWidgets.QMainWindow):
         self.fast_scan_check = self.check_box.isChecked()
         badfiles = set_badfiles(get_badfiles(settings_file))
         logging.info(f'BadFiles: {badfiles}')
+        self.ui.statusbar.showMessage('Настройки сохранены.')
         self.settings.close()
 
     # окно с настройками (через жопу, надо наверно переделать, но хз как)
