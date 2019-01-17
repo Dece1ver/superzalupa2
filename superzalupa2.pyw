@@ -11,13 +11,14 @@ import os
 import logging
 import configparser
 
+version = '2.0117'
 logging.basicConfig(level=logging.INFO,
                     format='%(levelname)s : %(thread)d : %(threadName)s : %(asctime)s :\n%(message)s\n')
 if not os.path.isfile('settings.ini'):
     logging.info('Settings file not found, creating a new one.')
     config = configparser.ConfigParser()
     config['SETTINGS'] = {'FastScanCheckboxState': 'False',
-                          'IgnoredFiles': '.PBG, .PYC, .PY, .PYW, .KV, .UI, .MP3, .FLAC, .WAV, .OGG, .JPG, .JPEG, .BMP, .ICO, .TIFF, .JPE, .OXPS, .PSD, .PNG, .GIF, .MPEG, .MP4, .WEBM, .WMA, .FLV, .MOV, .3GP, .AVI, .VOB, .EXE, .RAR, .ZIP, .7Z, .MSI, .INSTALL, .APK, .XLS, .XLSX, .WPS, .FRW, .INI, .CFG, .DB, .DAT, .TMP, .DOC, .DOCX, .PDF, .DJVU, .FB2, .EPUB, .DB, .LNK, .URL, .HTML, .GP3, .GP4, .GP5, .GPX, .CDW, .FRW, .M3D, .KDW, .SPW, .A3D, .SYS, .HLP, .HTM, .PPT, .COM, '}
+                          'IgnoredFiles': '.PBG, .PYC, .PY, .PYW, .KV, .UI, .MP3, .FLAC, .WAV, .OGG, .JPG, .JPEG, .BMP, .ICO, .TIFF, .JPE, .OXPS, .PSD, .PNG, .GIF, .MPEG, .MP4, .WEBM, .WMA, .FLV, .MOV, .MKV, .3GP, .AVI, .VOB, .EXE, .RAR, .ZIP, .7Z, .MSI, .INSTALL, .APK, .XLS, .XLSX, .WPS, .FRW, .INI, .CFG, .DB, .DAT, .TMP, .DOC, .DOCX, .PDF, .DJVU, .FB2, .EPUB, .DB, .LNK, .URL, .HTML, .GP3, .GP4, .GP5, .GPX, .CDW, .FRW, .M3D, .KDW, .SPW, .A3D, .SYS, .HLP, .HTM, .PPT, .COM'}
 
     with open('settings.ini', 'w') as config_file:
         config.write(config_file)
@@ -70,6 +71,7 @@ class MyInterface(QtWidgets.QMainWindow):
         self.ui.scaner_path_dialog_button.clicked.connect(self.get_path)
         self.ui.action.triggered.connect(self.show_settings)
         self.ui.action_2.triggered.connect(self.show_wia_norm)
+        self.ui.action_3.setText('О программе')
         self.ui.action_3.triggered.connect(self.show_help)
         self.ui.action_4.triggered.connect(self.show_200_norm)
         self.ui.action_5.triggered.connect(self.close)
@@ -174,8 +176,8 @@ class MyInterface(QtWidgets.QMainWindow):
         norm_window.show()
 
     def show_help(self):
-        help_window = QtWidgets.QMessageBox(4, 'Справка', 'Что-то будет когда-нибудь')
-        help_window.exec()
+        # help_window = QtWidgets.QMessageBox(4, 'Справка', 'Что-то будет когда-нибудь')
+        help_window = QtWidgets.QMessageBox.about(application, 'Superzalupa 2', f'Версия {version}\nЕще в разработке.')
 
     def save_settings(self):
 
@@ -322,7 +324,7 @@ class MyInterface(QtWidgets.QMainWindow):
         self.ui.fanuc_list_widget.clear()
         self.ui.info_window.clear()
 
-        self.ui.info_window.insertPlainText(f'Сканирование директории "{self.ui.cwd}"...\n')
+        self.ui.info_window.insertPlainText(f'Сканирование директории "{self.ui.cwd}"...')
         self.ui.progressBar.setRange(0, 0)
         self.ui.progressBar.setValue(-1)
         self.scaner_thread.start()
@@ -372,7 +374,7 @@ class MyInterface(QtWidgets.QMainWindow):
             self.ui.statusbar.showMessage('Сканирование. Результаты будут отображены после завершения.')
 
     def finish_scan(self):
-
+        self.ui.info_window.insertPlainText(' завершено!\n')
         if len(self.mazatrol_files) != 0:
             if self.fast_scan_check:
                 self.ui.mazatrol_list_widget.addItems(self.mazatrol_labels)
