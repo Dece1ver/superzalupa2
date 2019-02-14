@@ -4,7 +4,7 @@ import logging
 
 programm_dir, _ = os.path.split(__file__)
 logging.basicConfig(level=logging.INFO,
-                    format='NORM LOGGER: %(levelname)s : %(asctime)s :\n%(message)s\n')
+                    format='%(levelname)s : %(thread)d : %(threadName)s : %(asctime)s :\n%(message)s\n')
 
 
 def if_int(str):
