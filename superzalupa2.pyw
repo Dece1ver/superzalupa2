@@ -87,9 +87,9 @@ class MyInterface(QtWidgets.QMainWindow):
         logging.info(f'Readed status: {self.fast_scan_check}')
 
         self.icon = QtGui.QIcon()
-        self.icon.addPixmap(QtGui.QPixmap(os.path.join(programm_dir, 'window.ico')), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.icon.addPixmap(QtGui.QPixmap(os.path.join(programm_dir, 'misc', 'window.ico')), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.setWindowIcon(self.icon)
-        self.ui.label_superzalupa.setPixmap(QtGui.QPixmap(os.path.join(programm_dir, 'label.png')))
+        self.ui.label_superzalupa.setPixmap(QtGui.QPixmap(os.path.join(programm_dir, 'misc', 'label.png')))
 
         # созданиие инстанса потока сканера и подключение сигналов
         self.scaner_thread = ScanerThread()
@@ -311,9 +311,7 @@ class MyInterface(QtWidgets.QMainWindow):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.settings.sizePolicy().hasHeightForWidth())
         self.settings.setSizePolicy(sizePolicy)
-        icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap("window.ico"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.settings.setWindowIcon(icon)
+        self.settings.setWindowIcon(self.icon)
         label = QtWidgets.QLabel(self.settings)
         label.setText('Выбор настроек:')
         label.setGeometry(QtCore.QRect(10, 0, 391, 31))
@@ -751,7 +749,7 @@ class FanucRenamer(QThread, MyInterface):
 
 if __name__ == '__main__':
     app = QtWidgets.QApplication([])
-    splash = QtWidgets.QSplashScreen(QtGui.QPixmap(os.path.join(programm_dir, 'img.png')))
+    splash = QtWidgets.QSplashScreen(QtGui.QPixmap(os.path.join(programm_dir, 'misc', 'img.png')))
     splash.show()
     application = MyInterface()
     application.show()
