@@ -95,6 +95,7 @@ class MyInterface(QtWidgets.QMainWindow):
         self.scaner_thread = ScanerThread()
         self.scaner_thread.started.connect(self.on_start)
         self.scaner_thread.scaner_signal.connect(self.add_file)
+        self.scaner_thread.add_folder.connect(self.view_current)
         self.scaner_thread.finished.connect(self.finish_scan)
 
         # создание инстанса потока мазаковского переименовывателя с сигналами
@@ -451,12 +452,17 @@ class MyInterface(QtWidgets.QMainWindow):
         self.ui.label_fanuc_list.setEnabled(False)
         self.ui.scaner_path_dialog_button.setEnabled(False)
         self.ui.action.setEnabled(False)
-        self.ui.statusbar.showMessage('Сканировние.')
+        self.ui.statusbar.showMessage('Сканирование.')
         self.ui.rename_mazatrol_button.setEnabled(False)
         self.ui.rename_fanuc_button.setEnabled(False)
+        self.fs, self.ls = 0, 0
 
     def stop_scaner(self):
         self.scaner_thread.running = False
+
+    def view_current(self, dir_path):
+        if self.fast_scan_check:
+            self.ui.statusbar.showMessage(f'Сканирование: {dir_path}')
 
     def add_file(self, full_path_to_file, file_label):
         if self.fast_scan_check:
@@ -465,6 +471,7 @@ class MyInterface(QtWidgets.QMainWindow):
             else:
                 self.ui.label_fanuc_list.setText(f'Файлов Fanuc: {len(self.fanuc_files)}')
         else:
+            self.ui.statusbar.showMessage(f'Сканирование: {full_path_to_file}')
             if full_path_to_file.upper().endswith('.PBG'):
                 item = QtWidgets.QListWidgetItem()
                 self.ui.mazatrol_list_widget.addItem(item)
@@ -478,12 +485,17 @@ class MyInterface(QtWidgets.QMainWindow):
                 self.ui.fanuc_list_widget.setCurrentItem(item)
                 self.ui.label_fanuc_list.setText(f'Файлов Fanuc: {len(self.fanuc_files)}')
         if not self.fast_scan_check and (len(self.fanuc_files) > 500 or len(self.mazatrol_files) > 500):
-            self.ui.statusbar.showMessage('Сканировние. Если интерфейс сильно зависает, можно включить в настройках быстрое сканирование (после остановки).')
+            if not self.ls:
+                self.ui.info_window.insertPlainText('\nЕсли интерфейс сильно зависает, то в настройках можно включить быстрое сканирование.')
+                self.ls = 1
         elif self.fast_scan_check:
-            self.ui.statusbar.showMessage('Сканирование. Результаты будут отображены после завершения.')
+            if not self.fs:
+                self.ui.info_window.insertPlainText('\nРезультаты будут отображены после завершения.')
+                self.fs = 1
 
     def finish_scan(self):
-        self.ui.info_window.insertPlainText(' завершено!\n')
+        self.ui.info_window.clear()
+        self.ui.info_window.insertPlainText(f'Сканирование директории "{self.ui.cwd}"... завершено.\n')
         if len(self.mazatrol_files) != 0:
             if self.fast_scan_check:
                 self.ui.mazatrol_list_widget.addItems(self.mazatrol_labels)
@@ -638,6 +650,7 @@ class MyInterface(QtWidgets.QMainWindow):
 class ScanerThread(QThread, MyInterface):
 
     scaner_signal = pyqtSignal(str, str)
+    add_folder = pyqtSignal(str)
 
     def __init__(self):
         QThread.__init__(self)
@@ -655,6 +668,7 @@ class ScanerThread(QThread, MyInterface):
             if not self.status:
                 logging.info(f'Highlevel terminating')
                 break
+            self.add_folder.emit(dir_paths)
             for file in file_names:
                 if not self.running:
                     logging.info(f'Lowlevel terminating')
