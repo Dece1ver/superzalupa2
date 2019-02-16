@@ -12,7 +12,7 @@ import os
 import logging
 import configparser
 
-version = '2.0214'
+version = '2.0217'
 programm_dir, _ = os.path.split(__file__)
 settings_file = os.path.join(programm_dir, 'settings.ini')
 logging.basicConfig(level=logging.INFO,
@@ -459,8 +459,7 @@ class MyInterface(QtWidgets.QMainWindow):
         self.scaner_thread.running = False
 
     def view_current(self, dir_path):
-        if self.fast_scan_check:
-            self.ui.statusbar.showMessage(f'Сканирование: {dir_path}')
+        self.ui.statusbar.showMessage(f'Сканирование: {dir_path}')
 
     def add_file(self, full_path_to_file, file_label):
         if self.fast_scan_check:
@@ -521,7 +520,7 @@ class MyInterface(QtWidgets.QMainWindow):
             self.ui.label_fanuc_list.setText(f'Файлов Fanuc не найдено.')
             self.ui.info_window.insertPlainText(f'Файлов Fanuc не найдено.\n')
 
-        if self.mazatrol_files == 0 and self.fanuc_files == 0:
+        if len(self.mazatrol_files) == 0 and len(self.fanuc_files) == 0:
             self.ui.statusbar.showMessage('Нечего переименовывать.')
         self.ui.scaner_path_dialog_button.setEnabled(True)
         self.ui.action.setEnabled(True)
@@ -666,12 +665,12 @@ class ScanerThread(QThread, MyInterface):
             if not self.status:
                 logging.info(f'Highlevel terminating')
                 break
-            self.add_folder.emit(dir_paths)
             for file in file_names:
                 if not self.running:
                     logging.info(f'Lowlevel terminating')
                     self.status = False
                     break
+                self.add_folder.emit(dir_paths)
                 full_path_to_file = os.path.join(dir_paths, file)
                 if full_path_to_file.upper().endswith('.PBG'):
                     application.mazatrol_files.append(full_path_to_file)
