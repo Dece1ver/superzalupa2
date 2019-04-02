@@ -406,7 +406,7 @@ class MyInterface(QtWidgets.QMainWindow):
                     file_name = file_name.replace('\\', '-').replace('*', '-').replace('/', '-').strip(' ')
 
             return file_name
-        except ZeroDivisionError:
+        except UnicodeDecodeError:
             return f'Не удалось получить имя файла: {full_path_to_file}'
             self.error_files.append(self.full_path_to_file)
 
@@ -459,6 +459,7 @@ class MyInterface(QtWidgets.QMainWindow):
         self.scaner_thread.running = False
 
     def view_current(self, dir_path):
+        dir_path = dir_path.replace('/', '\\')
         self.ui.statusbar.showMessage(f'Сканирование: {dir_path}')
 
     def add_file(self, full_path_to_file, file_label):
@@ -468,6 +469,7 @@ class MyInterface(QtWidgets.QMainWindow):
             else:
                 self.ui.label_fanuc_list.setText(f'Файлов Fanuc: {len(self.fanuc_files)}')
         else:
+            full_path_to_file = full_path_to_file.replace('/', '\\')
             self.ui.statusbar.showMessage(f'Сканирование: {full_path_to_file}')
             if full_path_to_file.upper().endswith('.PBG'):
                 item = QtWidgets.QListWidgetItem()
