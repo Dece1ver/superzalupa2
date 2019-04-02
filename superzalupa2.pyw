@@ -360,6 +360,7 @@ class MyInterface(QtWidgets.QMainWindow):
         new_path = QtWidgets.QFileDialog.getExistingDirectory()
         if new_path != '':
             self.ui.cwd = new_path
+        self.ui.cwd = self.ui.cwd.replace('/', '\\')
         self.ui.scaner_path.setText(self.ui.cwd)
         logging.info(f'Set new path to: "{self.ui.cwd}"')
         self.ui.scaner_path.setCursorPosition(0)
