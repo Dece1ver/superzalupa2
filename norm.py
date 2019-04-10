@@ -98,6 +98,30 @@ def get_350_details(details=[]):
     return details
 
 
+def get_integrex_details(details=[]):
+    file = xlrd.open_workbook((os.path.join(programm_dir, 'misc', 'INT.xlsx')))
+    sheet = file.sheet_by_index(0)
+    logging.info(file)
+    for row in range(2, sheet.nrows):
+        logging.debug(sheet.row(row))
+        detail = str(sheet.row(row)[0]).replace('text:', '').replace('empty:', '')
+        detail = detail[1:-1]
+        machine_time = str(sheet.row(row)[4]).replace('number:', '').replace('text:', '').replace('empty:', '')
+        machine_time = if_int(machine_time)
+        machine_time = if_empty(machine_time)
+        replace_time = str(sheet.row(row)[2]).replace('number:', '').replace('text:', '').replace('empty:', '')
+        replace_time = if_int(replace_time)
+        replace_time = if_empty(replace_time)
+        setup_time = str(sheet.row(row)[1]).replace('number:', '').replace('text:', '').replace('empty:', '')
+        setup_time = if_int(setup_time)
+        setup_time = if_empty(setup_time)
+
+        detail = f'{detail: <45} наладка: {setup_time: <4} машинное время: {machine_time: <6} замена: {replace_time: <3}'
+
+        details.append(detail)
+        print(detail)
+    return details
+
 # if __name__ == '__main__':
 #     get_wia_details()
 #     get_200_details()

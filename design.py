@@ -8,6 +8,7 @@
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 
+
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
@@ -398,6 +399,8 @@ class Ui_MainWindow(object):
         self.action_2.setObjectName("action_2")
         self.action_4 = QtWidgets.QAction(MainWindow)
         self.action_4.setObjectName("action_4")
+        self.action_6 = QtWidgets.QAction(MainWindow)
+        self.action_6.setObjectName("action_6")
         self.action_calc = QtWidgets.QAction(MainWindow)
         self.action_calc.setObjectName("action_calc")
         self.action_Mazak_QTS350 = QtWidgets.QAction(MainWindow)
@@ -409,6 +412,7 @@ class Ui_MainWindow(object):
         self.menu.addAction(self.action_5)
         self.menu_2.addAction(self.action_2)
         self.menu_2.addSeparator()
+        self.menu_2.addAction(self.action_6)
         self.menu_2.addAction(self.action_4)
         self.menu_2.addAction(self.action_Mazak_QTS350)
         self.menu_3.addAction(self.action_calc)
@@ -437,7 +441,7 @@ class Ui_MainWindow(object):
         self.action_3.setText(_translate("MainWindow", "Справка"))
         self.action_5.setText(_translate("MainWindow", "Выход"))
         self.action_2.setText(_translate("MainWindow", "Нормы SKT/WIA"))
+        self.action_6.setText(_translate("MainWindow", "Нормы Integrex"))
         self.action_4.setText(_translate("MainWindow", "Нормы Mazak 200ML"))
         self.action_calc.setText(_translate("MainWindow", "Выработка"))
         self.action_Mazak_QTS350.setText(_translate("MainWindow", "Нормы Mazak QTS350"))
-

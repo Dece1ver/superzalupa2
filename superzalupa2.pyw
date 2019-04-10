@@ -12,7 +12,7 @@ import os
 import logging
 import configparser
 
-version = '2.0217'
+version = '2.0410'
 programm_dir, _ = os.path.split(__file__)
 settings_file = os.path.join(programm_dir, 'settings.ini')
 logging.basicConfig(level=logging.INFO,
@@ -75,6 +75,7 @@ class MyInterface(QtWidgets.QMainWindow):
         self.ui.action_2.triggered.connect(self.show_wia_norm)
         self.ui.action_3.setText('О программе')
         self.ui.action_3.triggered.connect(self.show_help)
+        self.ui.action_6.triggered.connect(self.show_integrex_norm)
         self.ui.action_4.triggered.connect(self.show_200_norm)
         self.ui.action_Mazak_QTS350.triggered.connect(self.show_350_norm)
         self.ui.action_5.triggered.connect(self.close)
@@ -206,6 +207,42 @@ class MyInterface(QtWidgets.QMainWindow):
         font.setPointSize(9)
         norm_list.setFont(font)
         norm_list.addItems(norm.get_wia_details())
+        norm_list.setAlternatingRowColors(True)
+        norm_window.show()
+
+    def show_integrex_norm(self):
+        norm_label = 'Нормы для Integrex:'
+        norm_window = QtWidgets.QWidget(self, Qt.Window)
+        norm_window.setWindowModality(QtCore.Qt.WindowModal)
+        norm_window.setMinimumSize(700, 500)
+        norm_window.setMaximumSize(700, 500)
+        norm_window.setWindowTitle('Нормы')
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(norm_window.sizePolicy().hasHeightForWidth())
+        norm_window.setSizePolicy(sizePolicy)
+        norm_window.setWindowIcon(self.icon)
+        label = QtWidgets.QLabel(norm_window)
+        label.setText(norm_label)
+        label.setGeometry(QtCore.QRect(10, 0, 691, 31))
+        label.setObjectName("label")
+        line = QtWidgets.QFrame(norm_window)
+        line.setGeometry(QtCore.QRect(10, 20, 681, 16))
+        line.setFrameShape(QtWidgets.QFrame.HLine)
+        line.setFrameShadow(QtWidgets.QFrame.Sunken)
+        line.setObjectName("line")
+        norm_list = QtWidgets.QListWidget(norm_window)
+        norm_list.setEnabled(True)
+        norm_list.setGeometry(QtCore.QRect(1, 30, 698, 469))
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
+        sizePolicy.setHeightForWidth(norm_list.sizePolicy().hasHeightForWidth())
+        norm_list.setSizePolicy(sizePolicy)
+        font = QtGui.QFont()
+        font.setFamily("Consolas")
+        font.setPointSize(9)
+        norm_list.setFont(font)
+        norm_list.addItems(norm.get_integrex_details())
         norm_list.setAlternatingRowColors(True)
         norm_window.show()
 
